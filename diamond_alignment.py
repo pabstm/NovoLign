@@ -14,6 +14,7 @@ import shutil
 
 def align(input_files,Output_directory, # peptides in fasta format
                       database_path,    # full path to diamond database
+                      diamond_path=str(Path(basedir,"diamond")),
                       matrix_path=str(Path(basedir,"PAM70.mat")),
                       output_columns=["qseqid","sseqid","stitle","pident","bitscore","qseq","sseq"],
                       select=" -k50 ", # can be --top x% or --max-target-seqs/-k
@@ -36,7 +37,7 @@ def align(input_files,Output_directory, # peptides in fasta format
         output_file=str(Path(output_folder,Path(input_file).stem+".tsv"))
         
         command="cd "+'"'+basedir +'"'+ " && " + \
-                "".join(['"'+str(Path(basedir,"diamond"))+'"',   
+                "".join(['"'+diamond_path+'"',   
                 " blastp -q " +'"'+input_file+'"',
                 " -d "+'"'+database_path+'"',
                 " -o "+'"'+output_file+'"',
