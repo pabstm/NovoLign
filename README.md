@@ -70,7 +70,7 @@ If you would like to use this pipeline in your research, please cite the followi
 
 #### Contact:
 -Hugo Kleimamp (Developer): hbckl@bio.aau.dk<br> 
--Martin Pabst: M.Pabst@tudelft.nl<br>
+-Martin Pabst (Co-Developer): M.Pabst@tudelft.nl<br>
 
 
 #### Related repositories:
