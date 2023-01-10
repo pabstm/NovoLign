@@ -1,19 +1,18 @@
 # NovoLign
 
-# NovoBridge
 
-This is the repository for the NovoBridge pipeline, as described in:<br>
 
-Hugo B. C. Kleikamp, Mario Pronk, Claudia Tugui, Leonor Guedes da Silva, Ben Abbas, Yue Mei Lin, Mark C.M. van Loosdrecht and Martin Pabst* Database-independent de novo metaproteomics of complex microbial communities, Cell Systems (2021)
-doi:10.1016/j.cels.2021.04.003
+This is the repository for the NovoLign pipeline, as described in:<br>
 
-The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using either PEAKS or DeepNovo generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra.
+Paper Placeholder
 
-NovoBridge has been tested only in an Anaconda Spyder environment!
+The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using either PEAKS generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra.
+
+NovoLign has been tested only in an Anaconda Spyder environment!
 
 <br>
 
-#### What is Novobridge?
+#### What is NovoLign?
 Novobridge is an automated pipeline for fast processing, and integrated annotation and visualization of *de novo* proteomics data.
 
 <br>
