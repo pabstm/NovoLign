@@ -51,12 +51,13 @@ if os.path.exists(filepaths_df_path):
     
  
 ##### Performance parameters ####
-Database_name="Swiss-Prot"
 PEAKS_Score_cuttoff=50    # minimum ALC(%)
 bit=30                    # minimum bitscore
 filter_dynamic_score=False
 filter_alc_bit=True
+
 Temporary_directory=basedir #location where DIAMOND writes temmporary indices to
+input_files=glob.glob("".join((basedir,"\Input_*"))) # location of input folders
 
 # =============================================================================
 # END DEFINE PARAMETERS
@@ -71,8 +72,7 @@ ncbi_taxdf.columns=["OX"]+ranks+["OS"]
 # START NOVOLIGN PIPELINE
 # =============================================================================
 
-# Get all input files
-input_files=glob.glob("".join((basedir,"\Input_*")))
+
 
 for infolder in input_files:
     print("analysing: "+infolder)
@@ -91,7 +91,7 @@ for infolder in input_files:
     """
     Prepare folders and paths
     """
-    Output_directory=str(Path(input+"/Output_"+str(PEAKS_Score_cuttoff)+"_"+"dynamic_score_"+Database_name))
+    Output_directory=str(Path(Path(infolder).parents[0],Path(infolder).name.replace("Input_","Output_")))
     if not os.path.exists(Output_directory): os.mkdir(Output_directory)
     if not os.path.exists(Temporary_directory): os.mkdir(Temporary_directory)
 
