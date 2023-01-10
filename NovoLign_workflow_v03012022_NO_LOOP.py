@@ -27,10 +27,29 @@ script_dir=os.getcwd()
 basedir=os.getcwd()
 
 
+#attempt to read filepaths from Setup
+filepaths_df_path=str(Path(basedir,"Setup","setup_filepaths.tsv"))
+if os.path.exists(filepaths_df_path):
+    filepaths_df=pd.read_csv(filepaths_df_path,sep="\t")
+    diamond_path         =filepaths_df.loc["diamond_path","path"]
+    ncbi_taxonomy_path   =filepaths_df.loc["ncbi_taxonomy_path","path"]
+    diamond_database_path=filepaths_df.loc["diamond_database_path","path"]
+    
+ else:
+    print("Setup filepaths not found, please execute run_Setup.py in the folder Setup, with your database of choice")
+    print("Or copy-paste absolute paths to diamond executable, diamond database, and parsed ncbi taxonomy file manually in the 3 lines below:")
+    
 # =============================================================================
 # BEGIN DEFINE PARAMETERS
 # =============================================================================
-
+    
+    
+    ##### Input manual filepaths ####
+    diamond_path=         str(Path(basedir,"Setup","diamond"))                       #placeholder path to diamond executable
+    ncbi_taxonomy_path=   str(Path(basedir,"Setup","parsed_ncbi_taxonomy.tsv"))      #placeholder path to parsed ncbi taxonomy
+    diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.dmnd"))  #placeholder path to diamond database
+    
+ 
 ##### Performance parameters ####
 Database_name="Swiss-Prot"
 PEAKS_Score_cuttoff=50    # minimum ALC(%)
@@ -39,27 +58,13 @@ filter_dynamic_score=False
 filter_alc_bit=True
 
 
-#attempt to read filepaths from Setup
-filepaths_df_path=str(Path(basedir,"Setup","setup_filepaths.tsv"))
-if os.path.exists(filepaths_df_path):
-    print("Setup filepaths not found, please execute run_Setup.py in the folder Setup, with your database of choice")
-    print("Or copy-paste absolute paths to diamond executable, diamond database, and parsed ncbi taxonomy file manually in the 3 lines below:")
-    
-    ##### Input manual filepaths ####
-    diamond_path=         str(Path(basedir,"Setup","diamond"))                       #placeholder path to diamond executable
-    ncbi_taxonomy_path=   str(Path(basedir,"Setup","parsed_ncbi_taxonomy.tsv"))      #placeholder path to parsed ncbi taxonomy
-    diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.dmnd"))  #placeholder path to diamond database
-    
 # =============================================================================
 # END DEFINE PARAMETERS
 # =============================================================================    
     
     
-else:
-    filepaths_df=pd.read_csv(filepaths_df_path,sep="\t")
-    diamond_path         =filepaths_df.loc["diamond_path","path"]
-    ncbi_taxonomy_path   =filepaths_df.loc["ncbi_taxonomy_path","path"]
-    diamond_database_path=filepaths_df.loc["diamond_database_path","path"]
+
+
     
 
 Temporary_directory=basedir
