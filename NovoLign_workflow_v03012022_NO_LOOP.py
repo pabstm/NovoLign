@@ -56,18 +56,12 @@ PEAKS_Score_cuttoff=50    # minimum ALC(%)
 bit=30                    # minimum bitscore
 filter_dynamic_score=False
 filter_alc_bit=True
-
+Temporary_directory=basedir #location where DIAMOND writes temmporary indices to
 
 # =============================================================================
 # END DEFINE PARAMETERS
 # =============================================================================    
     
-    
-
-
-    
-
-Temporary_directory=basedir
 #load NCBI parsed taxonomy
 ranks=["superkingdom","phylum","class","order","family","genus","species"]
 ncbi_taxdf=pd.read_csv(ncbi_taxonomy_path,sep="\t")
