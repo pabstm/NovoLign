@@ -72,7 +72,11 @@ ncbi_taxdf.columns=["OX"]+ranks+["OS"]
 # START NOVOLIGN PIPELINE
 # =============================================================================
 
-
+from write_to_fasta import write_to_fasta
+from diamond_alignment import align
+from process_alignment import Process_diamond_alignment, score_lca, lca
+from experiment_qc import Plot_high_scoring
+# from database_qc import * | not used for parameter sweep
 
 for infolder in input_files:
     print("analysing: "+infolder)
@@ -81,12 +85,6 @@ for infolder in input_files:
     de_novo_file=''.join(glob.glob("".join((infolder,"\*de novo peptides.csv"))))
     database_searching_file=''.join(glob.glob("".join((infolder,"\*psm.csv"))))
     fasta_database=''.join(glob.glob("".join((infolder,"\*.fasta"))))
-    from write_to_fasta import write_to_fasta
-    from diamond_alignment import align
-    from process_alignment import Process_diamond_alignment, score_lca, lca
-    from experiment_qc import Plot_high_scoring
-    # from database_qc import * | not used for parameter sweep
-
 
     """
     Prepare folders and paths
