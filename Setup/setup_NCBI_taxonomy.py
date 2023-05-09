@@ -12,8 +12,7 @@ import os
 from pathlib import Path
 from inspect import getsourcefile
 os.chdir(str(Path(os.path.abspath(getsourcefile(lambda:0))).parents[0]))
-basedir=str(Path(os.getcwd()).parents[0]) #change base directory to HybridCycler
-os.chdir(basedir)
+basedir=str(Path(os.getcwd()))
 print(os.getcwd())
 
 
@@ -32,11 +31,35 @@ import numpy as np
 
 #%% iteratively construct taxonomies from nodes.dmp
 
-def parse_NCBI_taxonomy(names,nodes,ranks=["superkingdom","phylum","class","order","family","genus","species"],path=False):
+def parse_NCBI_taxonomy(names,nodes,
+                        
+                        ranks=["superkingdom","phylum","class","order","family","genus","species"],
+                        
+                        
+                        #if the lineage contains one of these keywords, it is flagged as Dump taxa                        
+                        Dump_keywords=[" bacterium"," archaeon", "unclassified","uncultured","unidentified","environmental samples"], 
+                        
+                        
+                        break_counter=10,    #if no more new lineages are solved after this many cycles, stop parsing
+                        path=False):
 
     if not path: path=str(Path(basedir,"ncbi_taxonomy"))    
     if not os.path.exists(path): os.mkdir(path)
-
+    
+    
+    print("solving ncbi lineages, remaining lineages")
+    with open(names,"r") as f: lines=pd.DataFrame([l.split("\t")[0:7] for l in f.readlines()])
+    namesdf=lines.iloc[:,[0,2,4,6]]
+    namesdf.columns=["taxid","name","x","type"]
+    namesdf=namesdf.loc[namesdf["type"]=="scientific name",["taxid","name"]]
+    namesdf=namesdf.set_index("taxid")
+    
+    #Flag dump taxa:  
+    dump_taxids=list(set(sum([ namesdf[namesdf.name.str.contains(i)].index.tolist() for i in Dump_keywords],[]))) #taxids that contain a dump keyword
+    
+    
+    #iteratively construct taxonomies from nodes.dmp
+    
     with open(nodes,"r") as f: lines=pd.DataFrame([l.split("\t")[0:5] for l in f.readlines()])
     nodedf=lines.iloc[:,[0,2,4]]
     nodedf.columns=["taxid","parent_taxid","rank"]
@@ -48,8 +71,8 @@ def parse_NCBI_taxonomy(names,nodes,ranks=["superkingdom","phylum","class","orde
     
     
     inc=0               #used for renaming columns
-    count=len(has_rank) #used for breaking option 1 (no more remaining candidates)
-    break_counter=10     #used for breaking option 2 (3 loops same output)
+    count=len(has_rank) #stop if no more remaining lineages
+    
     
     
     parent=nodedf.copy()
@@ -95,12 +118,14 @@ def parse_NCBI_taxonomy(names,nodes,ranks=["superkingdom","phylum","class","orde
         print(count)
         
     
+    
+   
     rsp=[]
     for ix,has_rank in enumerate(completed):
         print("parsing batch "+str(ix)+"/"+str(len(completed)-1))
         rs=[]
         for r in ranks:
-            print(r)
+            #print(r)
             v=np.argwhere((has_rank==r).values)
             has_rank.values[v[:,0],v[:,1]]
             rdf=pd.DataFrame([has_rank.values[v[:,0],0], has_rank.values[v[:,0],v[:,1]-2]]).T
@@ -108,34 +133,36 @@ def parse_NCBI_taxonomy(names,nodes,ranks=["superkingdom","phylum","class","orde
             rdf=rdf.set_index("idx")
             rs.append(rdf)
         
+        
         p=rs[0]
         for r in rs[1:]:
             p=p.merge(r,how="left",on="idx")
+            
+        tcols=[i for i in has_rank.columns if "taxid" in i] #flag dump taxa
+        
+        if len(tcols)>1:
+            p["Dump_taxid"]=pd.concat([has_rank[t].isin(dump_taxids) for t in tcols],axis=1).any(axis=1).values
+        else:
+            p["Dump_taxid"]=has_rank[tcols[0]].isin(dump_taxids).values 
+        
         rsp.append(p)
     
     p=pd.concat(rsp)
-    
-        
-    #rename taxids according to names.damp
-    
-    with open(names,"r") as f: lines=pd.DataFrame([l.split("\t")[0:7] for l in f.readlines()])
-    namesdf=lines.iloc[:,[0,2,4,6]]
-    namesdf.columns=["taxid","name","x","type"]
-    namesdf=namesdf.loc[namesdf["type"]=="scientific name",["taxid","name"]]
-    namesdf=namesdf.set_index("taxid")
+
     
     #root is used as placeholder for nans
-    oi=pd.DataFrame(namesdf.loc[p.fillna("1").values.flatten()].values.reshape(-1,len(ranks)),columns=ranks) 
+    oi=pd.DataFrame(namesdf.loc[p[ranks].fillna("1").values.flatten()].values.reshape(-1,len(ranks)),columns=ranks) 
     oi[oi=="root"]=""
     oi.index=p.index
-    #write outputs
-    p=p.fillna("")
-    #p.to_csv("taxids.tsv",sep="\t")
+    oi["Dump_taxid"]=p["Dump_taxid"]
     
+    
+    #write outputs
     oi.index.name="OX"
     namesdf.index.name="OX"
     namesdf.columns=["OS"]
-    oi=oi.merge(namesdf,on="OX")
+    oi=oi.merge(namesdf,on="OX").reset_index()
+    
     
     outfile=str(Path(path,"parsed_ncbi_taxonomy.tsv"))
     oi.to_csv(outfile ,sep="\t")

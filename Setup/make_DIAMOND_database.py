@@ -21,15 +21,17 @@ def make_diamond_database(diamond_path,database_path,path=False,delete_old=False
     
     if not path:
         path=database_path
-    path=str(Path(Path(path.parents[0]),Path(path).stem)) #remove path extension (needed for diamond command syntax)
+    ppath=Path(path).parents[0]
+    outpath=str(Path(ppath,Path(ppath.stem))) #remove path extension (needed for diamond command syntax)
+    
 
     command="cd "+'"'+str(Path(diamond_path).parents[0]) +'"'+ " && "
-    command+="diamond makedb --in "+'"'+database_path+'"' + " -d "+'"'+path+'"'
+    command+="diamond makedb --in "+'"'+database_path+'"' + " -d "+'"'+outpath+'"'
     print(command)
     stdout, stderr =subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     if delete_old:
         os.remove(database_path)
 
-    return path+".dmnd"
+    return outpath+".dmnd"
 
