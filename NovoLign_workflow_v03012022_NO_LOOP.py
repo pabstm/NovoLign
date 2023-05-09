@@ -27,34 +27,28 @@ script_dir=os.getcwd()
 basedir=os.getcwd()
 
 
-#attempt to read filepaths from Setup
-filepaths_df_path=str(Path(basedir,"Setup","setup_filepaths.tsv"))
-if os.path.exists(filepaths_df_path):
-    filepaths_df=pd.read_csv(filepaths_df_path,sep="\t")
-    diamond_path         =filepaths_df.loc["diamond_path","path"]
-    ncbi_taxonomy_path   =filepaths_df.loc["ncbi_taxonomy_path","path"]
-    diamond_database_path=filepaths_df.loc["diamond_database_path","path"]
-    
- else:
-    print("Setup filepaths not found, please execute run_Setup.py in the folder Setup, with your database of choice")
-    print("Or copy-paste absolute paths to diamond executable, diamond database, and parsed ncbi taxonomy file manually in the 3 lines below:")
+
     
 # =============================================================================
 # BEGIN DEFINE PARAMETERS
 # =============================================================================
     
-    
-    ##### Input manual filepaths ####
-    diamond_path=         str(Path(basedir,"Setup","diamond"))                       #placeholder path to diamond executable
-    ncbi_taxonomy_path=   str(Path(basedir,"Setup","parsed_ncbi_taxonomy.tsv"))      #placeholder path to parsed ncbi taxonomy
-    diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.dmnd"))  #placeholder path to diamond database
+
+##### Use default setup #####
+Default=True           #if True, will look for setup file and overwrite manual filepaths.  
+Write_to_database=True #if True, will add and write 
+
+##### Input manual filepaths ####
+#(Set Default to False)
+diamond_path=         str(Path(basedir,"Setup","diamond","diamond"))                             # placeholder path to diamond executable
+ncbi_taxonomy_path=   str(Path(basedir,"Setup","ncbi_taxonomy","parsed_ncbi_taxonomy.tsv"))      # placeholder path to parsed ncbi taxonomy
+diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.dmnd"))                  # placeholder path to diamond database
     
  
 ##### Performance parameters ####
 PEAKS_Score_cuttoff=50    # minimum ALC(%)
 bit=30                    # minimum bitscore
-filter_dynamic_score=False
-filter_alc_bit=True
+
 
 Temporary_directory=basedir #location where DIAMOND writes temmporary indices to
 input_files=glob.glob("".join((basedir,"\Input_*"))) # location of input folders
@@ -65,8 +59,25 @@ input_files=glob.glob("".join((basedir,"\Input_*"))) # location of input folders
     
 #load NCBI parsed taxonomy
 ranks=["superkingdom","phylum","class","order","family","genus","species"]
-ncbi_taxdf=pd.read_csv(ncbi_taxonomy_path,sep="\t")
-ncbi_taxdf.columns=["OX"]+ranks+["OS"]
+ncbi_taxdf=pd.read_csv(ncbi_taxonomy_path,sep="\t").fillna("")
+
+#default diamond output columns
+output_columns=["qseqid","sseqid","stitle","pident","bitscore","qseq","sseq"]
+if Write_to_database: output_columns+=["full_sseq"]
+
+#attempt to read filepaths from Setup
+if Default:
+    filepaths_df_path=str(Path(basedir,"setup_filepaths.tsv"))
+    if os.path.exists(filepaths_df_path):
+        filepaths_df=pd.read_csv(filepaths_df_path,sep="\t").set_index("name")
+        diamond_path         =filepaths_df.loc["diamond_path","path"]
+        ncbi_taxonomy_path   =filepaths_df.loc["ncbi_taxonomy_path","path"]
+        diamond_database_path=filepaths_df.loc["diamond_database_path","path"]
+        
+    else:
+       print("Setup filepaths not found, please execute run_Setup.py in the folder Setup, with your database of choice")
+       print("Or copy-paste absolute paths to diamond executable, diamond database, and parsed ncbi taxonomy file manually in the 3 lines below:")
+
 
 # =============================================================================
 # START NOVOLIGN PIPELINE
@@ -74,7 +85,7 @@ ncbi_taxdf.columns=["OX"]+ranks+["OS"]
 
 from write_to_fasta import write_to_fasta
 from diamond_alignment import align
-from process_alignment import Process_diamond_alignment, score_lca, lca
+from process_alignment import Process_diamond_alignment, lca
 from experiment_qc import Plot_high_scoring
 # from database_qc import * | not used for parameter sweep
 
@@ -97,23 +108,23 @@ for infolder in input_files:
     1/5 DMD alignment
     """
     print("Step 1 of 5: Start diamond alignment")
-    fasta_files,denovo_peptides=write_to_fasta(de_novo_file,database_searching_file,Output_directory,PEAKS_Score_cuttoff,add_decoy=True)
-    alignments=align(fasta_files,Output_directory,DB=diamond_database_path)
-    target_decoys=Process_diamond_alignment(alignments,Output_directory,bit,filter_dynamic_score,filter_alc_bit)
+    fasta_file,denovo_peptides=write_to_fasta(de_novo_file,database_searching_file,Output_directory,PEAKS_Score_cuttoff=PEAKS_Score_cuttoff,add_decoy=True)  #Rewrite with key arguments not positional
+    alignments=align(fasta_file,Output_directory,diamond_path=diamond_path,database_path=diamond_database_path,output_columns=output_columns)
+    target_decoys=Process_diamond_alignment(alignments,Output_directory,minimum_bitscore=bit,output_columns=output_columns)
 
     """
     2/5 LCAs for alignments
     """
     print("Step 2 of 5: Construct LCAs")
-    for file in target_decoys[:-1]: # ignore DN only decoy
+    for file in target_decoys: 
         # 1. Conventional lca
-        denovo_peptides_lca=lca(file,denovo_peptides,Output_directory)
+        denovo_peptides_lca=lca(file,Output_directory,denovo_peptides=denovo_peptides,method="standard")
         # 2. Bitsore lca 
-        denovo_peptides_blca=score_lca(file,denovo_peptides,Output_directory,score_column="bitscore")
+        denovo_peptides_blca=lca(file,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore")
         # # 3. Weighted lca
-        denovo_peptides_wlca=lca(file,denovo_peptides,Output_directory,weighted=True,weight_column="weights") 
+        denovo_peptides_wlca=lca(file,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights") 
         # # 4. Decoy corrected weighted lca
-        denovo_peptides_cwlca=lca(file,denovo_peptides,Output_directory,weighted=True,weight_column="corrected_weights") 
+        denovo_peptides_cwlca=lca(file,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="corrected_weights") 
 
     """
     3/5 Grouped taxonomy report

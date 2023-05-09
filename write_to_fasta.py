@@ -37,7 +37,7 @@ def con_csv(peaksfiles):
 
 
 # universl peaks and deepnovo conversion
-def write_to_fasta(filename,database_searching_file,Output_directory,          # str: one  novo sequencing output file (full filepath), in .csv or .tsv format
+def write_to_fasta(de_novo_file,database_searching_file,Output_directory,          # str: one  novo sequencing output file (full filepath), in .csv or .tsv format
                    PEAKS_Score_cuttoff=50,             # numeric: mininum required score cutoff (PEAKS score, ALC(%))
                    Deepnovo_Score_cutoff=-0.1,         # numeric: mininum required score cutoff (DeepNovo score)
                    ppm_cutoff=None,                    # numeric: maximum ppm tolerance (absolute)
@@ -52,21 +52,23 @@ def write_to_fasta(filename,database_searching_file,Output_directory,          #
                    header_info=["Scan","alignment_Target_Decoy",
                                 "ALC (%)","predicted_score"] # which data should be retained in the fasta output [Scan and Target_Decoy are minimum requirements for the script to run]
                    ): 
-    
+
+ 
+ 
     # dynamic delimiter detection
-    if filename.endswith('.csv'):
-        df=pd.read_csv(filename,sep=",")
+    if de_novo_file.endswith('.csv'):
+        df=pd.read_csv(de_novo_file,sep=",")
         if "Peptide" not in df.columns: 
             delims=[i[0] for i in Counter([i for i in str(df.iloc[0]) if not i.isalnum()]).most_common()]
             for delim in delims:
                 if delim==" ": sep="\s"
                 try:
-                    df=pd.read_csv(filename,sep=delim)
+                    df=pd.read_csv(de_novo_file,sep=delim)
                     if "Peptide" in df.columns:
                         break
                 except:
                     pass   
-    if filename.endswith('.tsv'): df=pd.read_csv(filename,sep="\t")
+    if de_novo_file.endswith('.tsv'): df=pd.read_csv(de_novo_file,sep="\t")
     
     # convert Deepnovo output to PEAKS output format    
     if "predicted_sequence" in df.columns: df=format_DeepNovo(df)
@@ -128,23 +130,19 @@ def write_to_fasta(filename,database_searching_file,Output_directory,          #
     
     # write complete DN output
     if not os.path.exists(str(Path(Output_directory,output_folder))): os.mkdir(str(Path(Output_directory,output_folder)))
-    out_path_all=str(Path(Output_directory,output_folder,Path(filename).stem+".fa"))
+    out_path_all=str(Path(Output_directory,output_folder,Path(de_novo_file).stem+".fa"))
     with open(out_path_all,"w") as f:
         f.write("\n".join([heads[ix]+"\n"+peptide for ix,peptide in enumerate(df["Peptide"])])+"\n")
 
-    # make denovo only files (DN scans that are not present in DB search file)
     if database_searching_file!=None:
         db_df=pd.read_csv(database_searching_file)
-        df_only=df[~(df['Scan'].astype(float).isin(db_df['Scan'].astype(float)))]
-    
-    # write DN only output
-    if not os.path.exists(str(Path(Output_directory,output_folder))): os.mkdir(str(Path(Output_directory,output_folder)))
-    out_path_only=str(Path(Output_directory,output_folder,Path(filename).stem+" only.fa"))
-    with open(out_path_only,"w") as f:
-        f.write("\n".join([heads[ix]+"\n"+peptide for ix,peptide in enumerate(df_only["Peptide"])])+"\n")
-    
-    out_paths=[out_path_all,out_path_only]
-    return out_paths,peptide_df
+        
+        #de novo only scans, de novo only precursors
+        peptide_df["DeNovo_only_Scan"]=     ~peptide_df["Scan"].isin(db_df["Scan"])
+        peptide_df["DeNovo_only_Precursor"]=~peptide_df[["Scan","Mass"]].astype(str).sum(axis=1).isin(db_df[["Scan","Mass"]].astype(str).sum(axis=1))
+        peptide_df["DeNovo_only_PSM"]=      ~peptide_df[["Scan","Mass","Peptide"]].astype(str).sum(axis=1).isin(db_df[["Scan","Mass","Peptide"]].astype(str).sum(axis=1))
+        
+    return out_path_all,peptide_df
 
 
 def format_DeepNovo(df):

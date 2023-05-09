@@ -33,6 +33,8 @@ def align(input_files,Output_directory, # peptides in fasta format
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     
     output_files=[]
+    
+    if type(input_files)==str: input_files=[input_files]
     for input_file in input_files:
         output_file=str(Path(output_folder,Path(input_file).stem+".tsv"))
         
@@ -52,11 +54,21 @@ def align(input_files,Output_directory, # peptides in fasta format
                 " --query-cover  "+str(minimum_coverage),
                 " -f 6 qseqid "+" ".join(output_columns)+" ",
                 " -t "+'"'+Temporary_directory+'"'])
+                
+        print("diamond command:")
+        print(command)
         
-        # print
-        stdout, stderr =subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        print(stderr) 
-        shutil.move(str(Path(basedir,"diamond.log")), str(Path(Output_directory,output_folder,Path(input_file).stem+".log")))
+        #do this via a "bat" file because of diamond bug that does not want to work with custom matrices
+        batfile=str(Path(basedir,"alignment.bat"))
+        with open(batfile,"w") as bat:
+            bat.write("#!/bin/bash"+"\n"+command)
+
+        stdout, stderr =subprocess.Popen(batfile, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        shutil.move(str(Path(basedir,"diamond.log")), str(Path(Output_directory ,output_folder,Path(input_file).stem+".log")))
+
+        # stdout, stderr =subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        # print(stderr) 
+        # shutil.move(str(Path(basedir,"diamond.log")), str(Path(Output_directory,output_folder,Path(input_file).stem+".log")))
         
         output_files.extend([output_file])
         
