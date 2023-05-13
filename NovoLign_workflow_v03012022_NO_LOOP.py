@@ -35,15 +35,15 @@ basedir=os.getcwd()
     
 
 ##### Use default setup #####
-Default=True           #if True, will look for setup file and overwrite manual filepaths.  
-Write_to_database=True #if True, will add and write 
+Default=True                 # If True, will look for setup file and overwrite manual filepaths.  
+Write_to_database="Proteins" # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
 
 ##### Input manual filepaths ####
 #(Set Default to False)
 diamond_path=         str(Path(basedir,"Setup","diamond","diamond"))                             # placeholder path to diamond executable
 ncbi_taxonomy_path=   str(Path(basedir,"Setup","ncbi_taxonomy","parsed_ncbi_taxonomy.tsv"))      # placeholder path to parsed ncbi taxonomy
 diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.dmnd"))                  # placeholder path to diamond database
-    
+database_path=        str(Path(basedir,"Setup","Swiss-Prot","Swiss-Prot.fa"))                    # placeholder path to fasta databse (only required for database construction from aligned taxids)
  
 ##### Performance parameters ####
 PEAKS_Score_cuttoff=50    # minimum ALC(%)
