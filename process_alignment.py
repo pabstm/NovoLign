@@ -203,11 +203,11 @@ def Postfilter(
 
     
 def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon names, or tax ids 
-                    Database=database_path,   #Database from which to parse the 
+                    Database=database_path,   #Database from which to select the sequences from 
                     output_path=db_out,       #output path
                     minimum_rank="OX",        #Minimum rank that supplied taxonomic lineages should have
                     add_decoy=True,           #add reverse decoy of aligned proteins to database
-                    add_denovo_peptides=True, #add de novo peptides to database (not included in decoy)
+                    alignment_df=[],          #if the alignment dataframe is added, it will be used to add the de novo peptides to the database
                     
                         ):
 
@@ -236,6 +236,12 @@ def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon
                 f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"])+"\n")
                 if add_decoy:
                     f.write("\n".join(">decoy_"+chunk_df["description"]+"\n"+chunk_df["seq"].str[::-1)+"\n")
+                                                                                                 
+             if len(alignment_df):
+                dn_peptides=alignment_df.qseq.drop_duplicates().reset_index()
+                f.write("\n".join((">"+"DeNovo_"+dn_peptides["index"].astype(str)+"\n"+dn_peptides["qseq"]))+"\n")
+                                                                                                 
+                                                                                                 
     
         return output_path
     
@@ -399,7 +405,7 @@ def lca(df,                                  #dataframe with at least a column c
             with open(db_out,"w") as f:
                 f.write(fasta_str)
     if write_database=="Taxids":
-        Taxids_to_fasta(lineages=allowed_taxids.tolist())
+        Taxids_to_fasta(lineages=allowed_taxids.tolist(),alignment_df=df)
               
                 
     if type(denovo_peptides)!=type(None):
