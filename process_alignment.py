@@ -234,6 +234,8 @@ def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon
                 chunk_df=chunk_df[taxids.isin(allowed_taxids)]
     
                 f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"])+"\n")
+                if add_decoy:
+                    f.write("\n".join(">decoy_"+chunk_df["description"]+"\n"+chunk_df["seq"].str[::-1)+"\n")
     
         return output_path
     
@@ -270,7 +272,7 @@ def Proteins_to_fasta(df,                       #processed diamond alignment
     
     fasta_str="\n".join((">"+df.stitle+"\n"+df.full_sseq))+"\n"
     if add_decoy:
-        fasta_str+="\n".join((">"+"decoy_"+df.stitle+"\n"+df.full_sseq[::-1]))+"\n"  #reversed decoy
+        fasta_str+="\n".join((">"+"decoy_"+df.stitle+"\n"+df.full_sseq.str[::-1]))+"\n"  #reversed decoy
         
     if add_denovo_peptides:
         dn_peptides=df.qseq.drop_duplicates().reset_index()
