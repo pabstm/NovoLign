@@ -14,7 +14,7 @@ import numpy as np
 import more_itertools as mit
 from itertools import chain
 from collections import Counter
-from __main__ import ranks, ncbi_taxdf#, de_novo_file
+from __main__ import ranks, ncbi_taxdf, fasta_database_path # de_novo_file, This is actually a nice way of coding, maybe also import Output_directory, would make code more elegant
 import re
 
 # read alignment file to generator and filter on topx % scoring
@@ -75,10 +75,20 @@ def fill_g(x):
     return list(x)
 
 
+
+
+import itertools
+def chunk_gen(it,size=10**6):
+    c=itertools.count()
+    for _,g in itertools.groupby(it,lambda _:next(c)//size):
+        yield g
+        
+
+
+
+
 def Process_diamond_alignment(alignments,
-                              
- 
-                              
+
                               Output_directory,
                               fill_gaps=True,
 
@@ -161,8 +171,7 @@ def Process_diamond_alignment(alignments,
         else:
             target_decoys.append(al)
         
-        
- #%%
+
     return target_decoys
 
 
@@ -177,40 +186,46 @@ def Postfilter(
                                                     # if >=1, assumes static filter, taxa should appear above this treshold frequency, 
                                                     # if between 0-1 it is used as frequency quantile from the decoy LCA
                 ):
- 
+
     if type(denovo_peptides)!=type(None):
-        pdf=denovo_peptides[[group_on,'alignment_Target_Decoy']].merge(lcas,how="left",on=group_on)
+        pdf=denovo_peptides[[group_on,'alignment_Target_Decoy']].merge(lcas,how="inner",on=group_on)
     else:
         pdf=lcas
     
-    unirows=pdf[[group_on]+ranks].drop_duplicates()[ranks].astype(str).values.tolist()
-    jbranch=["#*".join(i) for i in unirows]
-    
+    unirows=pdf[[group_on]+ranks].drop_duplicates().groupby(ranks).size().rename("Count").reset_index()
+
     if filter_cutoff<1 and type(denovo_peptides)!=type(None): #if between 0-1, use decoy quantile
         d=pdf[pdf["alignment_Target_Decoy"]=="Decoy"]
         if len(d): filter_cutoff=d.groupby(ranks).size().quantile(filter_cutoff)
         else: print("warning, no Decoy detected!, select  filter cutoff of 1 or higher")
             
     print("post lca filter: "+str(round(filter_cutoff,2)))
-    fbranch=[branch for branch, counts in Counter(jbranch).items() if counts <= filter_cutoff]
-    removed_taxons=set(chain(*[i.split("#*") for i in fbranch]))   
+
+    allowed_taxons=np.unique(unirows.loc[unirows["Count"]>filter_cutoff,ranks])
+    removed_taxons=np.unique(unirows.loc[unirows["Count"]<=filter_cutoff,ranks])
+    removed_taxons=set(removed_taxons)-set(allowed_taxons)
     
     for i in ranks:
-        lcas.loc[lcas[i].isin(removed_taxons),i]=""
-        
+        lcas.loc[~lcas[i].isin(allowed_taxons),i]=""
+
+
     return denovo_peptides,lcas,removed_taxons
     
 
-    
-def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon names, or tax ids 
-                    Database=database_path,   #Database from which to select the sequences from 
-                    output_path=db_out,       #output path
+import Bio
+from Bio import SeqIO
+def Taxids_to_fasta(lineages,                 #DataFrame of taxonomic ranks
+                    output_path,              #File to which the resulting database is written
+                    Database=fasta_database_path,   #Database from which to select the sequences from 
+                          #
                     minimum_rank="OX",        #Minimum rank that supplied taxonomic lineages should have
                     add_decoy=True,           #add reverse decoy of aligned proteins to database
                     alignment_df=[],          #if the alignment dataframe is added, it will be used to add the de novo peptides to the database
                     
                         ):
 
+               
+        
         recs=SeqIO.parse(Database,format="fasta")
         chunks=chunk_gen(recs)
         
@@ -227,7 +242,7 @@ def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon
                 chunk_df=pd.DataFrame([[str(r.seq),r.description,r.id] for r in c],columns=["seq","description","id"])
                 taxids=chunk_df["description"].str.split("OX=").apply(lambda x: x[-1].split(" ")[0]).astype(int)
 
-                if minimum_rank!="OX" #merge with ncbi taxonomy and select on a specific rank
+                if minimum_rank!="OX": #merge with ncbi taxonomy and select on a specific rank
                     f=ncbi_taxdf[ncbi_taxdf["OX"].isin(taxids.tolist())]
                     allowed_taxids=f.loc[f[minimum_rank].isin(lineages),"OX"]
                 
@@ -235,16 +250,14 @@ def Taxids_to_fasta(lineages,                 #List of accepted taxonomies taxon
     
                 f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"])+"\n")
                 if add_decoy:
-                    f.write("\n".join(">decoy_"+chunk_df["description"]+"\n"+chunk_df["seq"].str[::-1)+"\n")
+                    f.write("\n".join(">decoy_"+chunk_df["description"]+"\n"+chunk_df["seq"].str[::-1])+"\n")
                                                                                                  
-             if len(alignment_df):
+            if len(alignment_df):
                 dn_peptides=alignment_df.qseq.drop_duplicates().reset_index()
-                f.write("\n".join((">"+"DeNovo_"+dn_peptides["index"].astype(str)+"\n"+dn_peptides["qseq"]))+"\n")
-                                                                                                 
-                                                                                                 
+                f.write("\n".join((">"+"DeNovo_"+dn_peptides["index"].astype(str)+"\n"+dn_peptides["qseq"]))+"\n")                                                                                                 
     
         return output_path
-    
+#%%   
 def Proteins_to_fasta(df,                       #processed diamond alignment 
                       lcas=None,                #input: lca df, used to generate list of proteins to include in database
                       removed_proteins=[],      #input: list of proteins that are excluded from database
@@ -252,7 +265,7 @@ def Proteins_to_fasta(df,                       #processed diamond alignment
                       add_decoy=True,           #add reverse decoy of aligned proteins to database
                       add_denovo_peptides=True, #add de novo peptides to database (not included in decoy)
                       ):
-    #%%
+  
     if "full_sseq" not in df.columns:
         print("No full protein sequences found, run diamond alignment with full_sseq in output columns!")
         return
@@ -309,16 +322,16 @@ def lca(df,                                  #dataframe with at least a column c
         
         ):
 
-    # #%%
-    # #test
-    # df=target_decoys[0]                                  #dataframe with at least a column called Peptide, and ranks
+      #%%
+    # # #test
+    # df=target_decoy                                 #dataframe with at least a column called Peptide, and ranks
     
     # Output_directory
     # group_on="Peptide"                  
-    # denovo_peptides=None                #original PSM DataFrame, used to merge back results
+    # denovo_peptides=denovo_peptides #None                #original PSM DataFrame, used to merge back results
     
     # #Weighing parameters
-    # method="weighted"                   # Options: False (conventional LCA), "weighted" (weighted lca), "focused" (focused lca)
+    # method="weighted"                   # Options: False/"standard" (conventional LCA), "weighted" (weighted lca), "focused" (focused lca)
     # weight_rank="genus"                 # weighted weighs on a specific rank
     # weight_column='corrected_weights'   # options: weights, corrected_weights, bitscore, score, weighted_score, corrected_weighted_score
     # protein_column="sseqid"            # name of column containing protein accessions, will be retained according to lca 
@@ -327,8 +340,10 @@ def lca(df,                                  #dataframe with at least a column c
     
     # filter_cutoff=5                     # post-lca filtering                  
      
-    # write_database=True        
+    # write_database="Taxids" #"Taxids"       
     # proteins=""
+    
+    df[taxid_column]=df[taxid_column].astype(str)
     
     if method=="focused":
         lin=[]
@@ -355,8 +370,10 @@ def lca(df,                                  #dataframe with at least a column c
     #aggregate proteins and taxids that follow lca:
     last=lcas.fillna(method="ffill",axis=1).iloc[:,-1]
     if protein_column in df.columns:
-        lcas["proteins"]=df[df[ranks].add(df[group_on],axis=0).isin(last.tolist()+last.index).any(axis=1)].groupby(group_on)[protein_column].apply(lambda x: ", ".join(list(set(x))))
-    lcas["taxids"]=df[df[ranks].add(df[group_on],axis=0).isin(last.tolist()+last.index).any(axis=1)].groupby(group_on)[taxid_column].apply(lambda x: ", ".join(list(set(x))))
+        lcas["proteins"]=df[df[ranks].add(df[group_on],axis=0).isin(last.tolist()+last.index).any(axis=1)].groupby(group_on)[protein_column].apply(lambda x: list(set(x)))
+    lcas["taxids"]=df[df[ranks].add(df[group_on],axis=0).isin(last.tolist()+last.index).any(axis=1)].groupby(group_on)[taxid_column].apply(lambda x: list(set(x)))
+    
+
 
     #add back proteins with no common ancestor concensus
     no_lca=df[~df[group_on].isin(lcas.index)]
@@ -376,40 +393,45 @@ def lca(df,                                  #dataframe with at least a column c
     prefix=""
     if method=="weighted": prefix="weighted_"+name_dict.get(weight_column)+str(weight_cutoff).replace(".","_")+"_" 
     if method=="focused":  prefix="focused_" +name_dict.get(weight_column)+str(weight_cutoff).replace(".","_")+"_" 
-    
-    #postfilter
-    removed_taxons=[]
-    if type(denovo_peptides)!=type(None):
+
+    #filter proteins and taxids with postfilter 
+    if filter_cutoff:
         denovo_peptides,lcas,removed_taxons=Postfilter(lcas,denovo_peptides=denovo_peptides,group_on=group_on,filter_cutoff=filter_cutoff) 
         
-        PSMs_out=str(Path(Output_directory,"PSMs",prefix+"PSMs.tsv"))
-        denovo_peptides.to_csv(PSMs_out,sep="\t") #write_PSMs
+        fdf=df[df[ranks].isin(removed_taxons).any(axis=1)]
+        if protein_column in fdf.columns:
+            removed_proteins=fdf[protein_column]
+            exProts=lcas.explode("proteins")["proteins"]
+            exProts=exProts[~exProts.isin(removed_proteins)]
+            lcas["proteins"]=exProts.groupby(exProts.index).apply(list)
             
-    #filter proteins and taxids with postfilter 
-    fdf=df[df[ranks].isin(removed_taxons).any(axis=1)]
-    if protein_column in fdf.columns:
-        removed_proteins=fdf[protein_column]
-        exProts=lcas.explode("proteins")["proteins"]
-        lcas["proteins"]=exProts[~exProts["proteins"].isin(removed_proteins).groupby(exProts.index).apply(list) 
-    exOX=lcas.explode("taxids")
-    allowed_taxids=exOX[~exOX["taxids"].isin(removed_taxons)
-    lcas["taxids"]=allowed_taxids.groupby(exOX.index).apply(list)
-                                  
+        removed_taxids=fdf[taxid_column]
+        exOX=lcas.explode("taxids")["taxids"]
+        exOX=exOX[~exOX.isin(removed_taxids)]
+        lcas["taxids"]=exOX.groupby(exOX.index).apply(list)
+
+
+    allowed_taxids=np.unique(lcas.explode("taxids")["taxids"].dropna())
+
+    lcas.loc[lcas["proteins"].isnull(),"proteins"] = lcas.loc[lcas["proteins"].isnull(),"proteins"].apply(lambda x: [""])
+    lcas.loc[lcas["taxids"].isnull(),"taxids"] = lcas.loc[lcas["taxids"].isnull(),"taxids"].apply(lambda x: [""])
+    lcas["proteins"]=lcas["proteins"].apply(lambda x: ", ".join(x))  
+    lcas["taxids"]=lcas["taxids"].apply(lambda x: ", ".join(x))                              
     lcas.to_csv(str(Path(Output_directory,"lca",prefix+"lca.tsv")),sep="\t") #write_lca
     
-    #write_database 
-    db_out=str(Path(Output_directory,"Database",prefix+"Database.fa"))
+    #write_database
+    db_out=str(Path(Output_directory,"Database",prefix+write_database+"DB_"+"Database.fa"))
     if write_database=="Proteins":
         fasta_str=Proteins_to_fasta(df,lcas,removed_proteins=removed_proteins)
         if fasta_str:
             with open(db_out,"w") as f:
                 f.write(fasta_str)
     if write_database=="Taxids":
-        Taxids_to_fasta(lineages=allowed_taxids.tolist(),alignment_df=df)
+        Taxids_to_fasta(lineages=allowed_taxids,Database=fasta_database_path,alignment_df=df,output_path=db_out)
               
-                
+       #%%         
     if type(denovo_peptides)!=type(None):
-            
+        PSMs_out=str(Path(Output_directory,"PSMs",prefix+"PSMs.tsv"))
+        denovo_peptides.to_csv(PSMs_out,sep="\t") #write_PSMs
         return PSMs_out
-
 
