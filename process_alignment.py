@@ -214,7 +214,7 @@ def Postfilter(
 
 import Bio
 from Bio import SeqIO
-def Taxids_to_fasta(lineages,                 #DataFrame of taxonomic ranks
+def Taxids_to_fasta(lineages,                 #list of taxons or taxonomy ids
                     output_path,              #File to which the resulting database is written
                     Database=fasta_database_path,   #Database from which to select the sequences from 
                           #
