@@ -219,18 +219,35 @@ def Taxids_to_fasta(lineages,                 #DataFrame of taxonomic ranks
                     Database=fasta_database_path,   #Database from which to select the sequences from 
                           #
                     minimum_rank="OX",        #Minimum rank that supplied taxonomic lineages should have
-                    add_decoy=True,           #add reverse decoy of aligned proteins to database
+                    add_decoy=False,           #add reverse decoy of aligned proteins to database
                     alignment_df=[],          #if the alignment dataframe is added, it will be used to add the de novo peptides to the database
                     
                         ):
+        #%%
+        # #test
+        # minimum_rank="OX"
+        # db_out=str(Path(Output_directory,"Database",prefix+write_database+"_"+minimum_rank+"_DB_"+"Database.fa"))
+        # lineages=allowed_taxids
+        # output_path=db_out
+        # add_decoy=False
+        # Database=fasta_database_path
+        # alignment_df=[]
+        # #end test
+        
+        lineages=[str(i) for i in lineages if i !=""] #remove missing ranks
+        lineages=[int(i)  if i.isdigit() else i for i in list(set(lineages))] #make unique
+        
+        rank_order=np.array(ranks+["OS","OX"]) #range in order of specificity
+        allowed_ranks=rank_order[np.argwhere(rank_order==minimum_rank)[0][0]:]
+        expanded_lineages=ncbi_taxdf.loc[ncbi_taxdf[allowed_ranks].isin(lineages).any(axis=1),allowed_ranks]
+        expanded_taxids=list(set(ncbi_taxdf.loc[ncbi_taxdf.isin(expanded_lineages.values.flatten()).any(axis=1),"OX"]))
 
-               
         
+        #shard a part of ncbi taxdf that satisfies the minimum rank requirement
+        #first you need to determine the taxonomic rank of each input
+            
         recs=SeqIO.parse(Database,format="fasta")
-        chunks=chunk_gen(recs)
-        
-        if minimum_rank=="OX": #select based directly on supplied taxonomy IDs (simplest approach)
-            allowed_taxids=[int(i) for i in lineages if i.isdigit()] 
+        chunks=chunk_gen(recs)    
         
         with open(output_path,"w") as f: #clears file if exists
             pass
@@ -242,11 +259,7 @@ def Taxids_to_fasta(lineages,                 #DataFrame of taxonomic ranks
                 chunk_df=pd.DataFrame([[str(r.seq),r.description,r.id] for r in c],columns=["seq","description","id"])
                 taxids=chunk_df["description"].str.split("OX=").apply(lambda x: x[-1].split(" ")[0]).astype(int)
 
-                if minimum_rank!="OX": #merge with ncbi taxonomy and select on a specific rank
-                    f=ncbi_taxdf[ncbi_taxdf["OX"].isin(taxids.tolist())]
-                    allowed_taxids=f.loc[f[minimum_rank].isin(lineages),"OX"]
-                
-                chunk_df=chunk_df[taxids.isin(allowed_taxids)]
+                chunk_df=chunk_df[taxids.isin(expanded_taxids)]
     
                 f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"])+"\n")
                 if add_decoy:
@@ -256,13 +269,14 @@ def Taxids_to_fasta(lineages,                 #DataFrame of taxonomic ranks
                 dn_peptides=alignment_df.qseq.drop_duplicates().reset_index()
                 f.write("\n".join((">"+"DeNovo_"+dn_peptides["index"].astype(str)+"\n"+dn_peptides["qseq"]))+"\n")                                                                                                 
     
+    #%%
         return output_path
 #%%   
 def Proteins_to_fasta(df,                       #processed diamond alignment 
                       lcas=None,                #input: lca df, used to generate list of proteins to include in database
                       removed_proteins=[],      #input: list of proteins that are excluded from database
                       minimum_rank="",          #input: taxonomic rank, in case lca is supplied, this can only select lcas with a certain level of taxonomic detail 
-                      add_decoy=True,           #add reverse decoy of aligned proteins to database
+                      add_decoy=False,          #add reverse decoy of aligned proteins to database
                       add_denovo_peptides=True, #add de novo peptides to database (not included in decoy)
                       ):
   
@@ -316,9 +330,13 @@ def lca(df,                                  #dataframe with at least a column c
         weight_cutoff=0.6,                   # minimum fraction of total weights 
         
         filter_cutoff=5,                     # post-lca filtering                  
-         
+        
+        #options for database construction
         write_database="Proteins",           # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
-        proteins=""
+        minimum_rank="OX",                   # Only used when writing database based on taxonomy
+        add_decoy=False,                     # add a reversed decoy sequences to the database
+        add_denovo=True,                     # add the denovo sequences peptides to the database
+
         
         ):
 
@@ -340,8 +358,11 @@ def lca(df,                                  #dataframe with at least a column c
     
     # filter_cutoff=5                     # post-lca filtering                  
      
-    # write_database="Taxids" #"Taxids"       
+    # write_database="Taxids" #"Taxids"    
+    # minimum_rank="OX"   
     # proteins=""
+    # #end test
+    
     
     df[taxid_column]=df[taxid_column].astype(str)
     
@@ -418,16 +439,19 @@ def lca(df,                                  #dataframe with at least a column c
     lcas["proteins"]=lcas["proteins"].apply(lambda x: ", ".join(x))  
     lcas["taxids"]=lcas["taxids"].apply(lambda x: ", ".join(x))                              
     lcas.to_csv(str(Path(Output_directory,"lca",prefix+"lca.tsv")),sep="\t") #write_lca
-    
+    #%%
     #write_database
-    db_out=str(Path(Output_directory,"Database",prefix+write_database+"DB_"+"Database.fa"))
+    db_out=str(Path(Output_directory,"Database",prefix+write_database+"_"+minimum_rank+"_DB_"+"Database.fa"))
     if write_database=="Proteins":
-        fasta_str=Proteins_to_fasta(df,lcas,removed_proteins=removed_proteins)
+        fasta_str=Proteins_to_fasta(df,lcas,removed_proteins=removed_proteins,add_denovo=add_denovo)
         if fasta_str:
             with open(db_out,"w") as f:
                 f.write(fasta_str)
     if write_database=="Taxids":
-        Taxids_to_fasta(lineages=allowed_taxids,Database=fasta_database_path,alignment_df=df,output_path=db_out)
+        if add_denovo:
+            Taxids_to_fasta(lineages=allowed_taxids,Database=fasta_database_path,alignment_df=df,output_path=db_out,minimum_rank=minimum_rank,add_decoy=add_decoy)
+        else:
+            Taxids_to_fasta(lineages=allowed_taxids,Database=fasta_database_path,output_path=db_out,minimum_rank=minimum_rank,add_decoy=add_decoy)
               
        #%%         
     if type(denovo_peptides)!=type(None):
