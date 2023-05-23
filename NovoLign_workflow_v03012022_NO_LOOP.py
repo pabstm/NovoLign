@@ -117,19 +117,19 @@ for infolder in input_files:
     print("Step 2 of 5: Construct LCAs")
     for target_decoy in target_decoys: 
         # 1. Conventional lca
-        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="standard")
+        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="standard",write_database="Proteins")
         # 2. Bitsore lca 
-        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore")
+        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore",write_database="Proteins")
         # # 3. Weighted lca
-        denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights") 
+        denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",write_database="Proteins") 
         # # 4. Decoy corrected weighted lca
-        denovo_peptides_cwlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="corrected_weights") 
+        denovo_peptides_cwlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="corrected_weights",write_database="Proteins") 
 
     """
     3/5 Grouped taxonomy report
     """
     print("Step 3 of 5: Get DN compositions")
-    files=glob.glob("".join((Output_directory,"\lca\*_combined.tsv")))
+    files=glob.glob("".join((Output_directory,"\lca\*.tsv")))
     for file in files: graphs(file,Output_directory,ranks,chain,Counter,os,np)
 
     """
