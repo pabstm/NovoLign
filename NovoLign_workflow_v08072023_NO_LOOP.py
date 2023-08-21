@@ -32,6 +32,7 @@ diamond_folder=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_c
 ncbi_taxonomy_path=   str(Path(basedir,"Setup","ncbi_taxonomy","parsed_ncbi_taxonomy.tsv"))      # placeholder path to parsed ncbi taxonomy
 fasta_database_path  =r"O:\USProtIL\uniprot_sprot.fasta"
 diamond_database_path=r"O:\USProtIL\uniprot_sprotIL.dmnd"  
+Temporary_directory=basedir     # DMD temmporary folder
 #diamond_database_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\UniRef100\UniRef100IL.dmnd"
 #fasta_database_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\UniRef100\uniref100_NoAmb_IJeqL.fasta"
 
@@ -41,7 +42,7 @@ bit=25                          # minimum bitscore
 freq_cut=5                      # lineage frequency filter for composition and DB creation
 Write_to_database="Proteins"    # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
 DB_rank="genus"                 # "OX" "species" "genus" or "family"
-Temporary_directory=basedir     # DMD temmporary folder
+
 input_files=glob.glob("".join((basedir,"\*Input_*"))) # location of input folders
 
 # =============================================================================
