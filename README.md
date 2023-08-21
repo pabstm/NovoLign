@@ -3,17 +3,26 @@
 
 
 This is the repository for the NovoLign pipeline, as described in:<br>
+"NovoLign: metaproteomic profiling by de novo sequence alignment" 
 
-Paper Placeholder
 
-The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using either PEAKS generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra.
+The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using PEAKS generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra. NovoLign has been tested and developed in an Anaconda Spyder environment.
 
-NovoLign has been tested only in an Anaconda Spyder environment!
+
+
+![alt text](https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg)
+
+
+Fig. 1 CHEW workflow subroutines
 
 <br>
 
-#### What is NovoLign? (Placeholder
+#### What is NovoLign? 
 <br>
+NovoLign is an tool that uses DIAMOND for error-tolerant annotation of de novo sequenced peptides.
+By aligning to general 
+additionally NovoLign
+
 
 ## Basic use
 
@@ -25,11 +34,16 @@ NovoLign has been tested only in an Anaconda Spyder environment!
 
 
 <br>
+Using alignment parameters optimized to short peptide homology
+
+LCAs optimized for short peptide homology
 
 #### What does it do? (Placeholder)
-
-
 <br>
+Outputs
+
+
+
 
 #### Running NovoLign (Placeholder)
 
