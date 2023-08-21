@@ -66,12 +66,12 @@ Examples of input files are supplied in the folder `Input_p_yeast`
 #### What outputs does it generate? 
 
 NovoLign generates several output files divided over different folders.
-|Folder        | Section | Contents|
+|Folder           | Section     |       Contents|
 |-----------------|:-----------:|---------------|
 |diamond_fasta| 1 | generated fasta file for DIAMOND alignment|
 |diamond_alignments| 1 | DIAMOND alignment|
 |lca| 2 | different LCA outputs: conventional (CON) weighted (W), bitscore weighted (BIT) |
-|composition| 3 | composition for different LCA outputs
+|composition| 3 | composition for different LCA outputs |
 |experiment_qc| 4 | comparison of de novo annotation rate per de novo score to database searching|
 |database_qc| 5 | comparison of taxonomic composition for de novo annotation to database searching |
 |psms| 5 | Final PSMs format output with NovoLign annotation |
@@ -109,6 +109,7 @@ Path parameters specify which databases should be used.
 
 <br>
 Other parameters specify cutoffs for de novo score, alignment score and taxon frequency, as how use NovoLign to perform database construction.
+
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
 |min_ALC_score| 70 |               numeric, minimum required ALC score (Peaks score)|
