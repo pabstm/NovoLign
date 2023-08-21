@@ -18,7 +18,12 @@ As de novo sequencing is independent of database composition, it provides an unb
 
 ## Basic use
 
-#### Setting up NovoLign (Placeholder)
+#### Setting up NovoLign 
+NovoLign is designed to interface with multiple commonly used reference databases, belonging to NCBI, UniprotKB or GTDB.
+Setup scripts are supplied in the folder `Setup` and can be run automatically with `run_Setup.py`
+To setup protein databases for GTDB, utility scripts are supplied to download unzip and merge GTDB reference proteomes, and add taxonomies to fasta headers. For NCBI, a linearized taxonomy is constructed for specified taxonomic ranks using taxdump.
+scripts are supplied for database curation, such as euqating I and L, and removing ambiguous amino acids.
+Lastly, scripts are supplied for automated downloading of DIAMOND.
 
 <br>
 
@@ -52,9 +57,8 @@ Outputs
 <br>
 
 ## Parameter options (Placeholder)
-Parameters can be freely changed within the script `Novobridge.py`.
-There are several parameters that can be changed to include more stringent filtering for de novo peptides, and to change quantification methods.
-
+Parameters can be freely changed within the main script.
+There are several parameters that can be changed to include more stringent filtering for de novo peptides.
 
 
 
@@ -75,14 +79,14 @@ If you would like to use this pipeline in your research, please cite the followi
 
 
 #### Contact:
--Hugo Kleimamp (Developer): hbckl@bio.aau.dk<br> 
+-Hugo Kleimamp (Developer): hugo.kleikamp@uantwerpen.be<br> 
 -Martin Pabst (Co-Developer): M.Pabst@tudelft.nl<br>
 
 
 #### Related repositories:
 https://github.com/bbuchfink/diamond<br>
 https://github.com/hbckleikamp/proteomic-database-prepper<br>
-https://github.com/hbckleikamp/NCBI2Lineage
-
+https://github.com/hbckleikamp/NCBI2Lineage<br>
+https://github.com/hbckleikamp/GTDB2DIAMOND
 
 
