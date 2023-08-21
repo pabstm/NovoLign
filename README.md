@@ -41,11 +41,7 @@ The NovoLign pipeline consists of 5 parts:
 
 
 #### What does it do? 
-
 After determining the best-performing parameter combinations for the NovoLign pipeline using synthetic communities, we evaluated its general practicability by studying a range of pure reference strains, enrichment cultures, and complex microbial communities. In addition to determining microbial composition using de novo sequence alignment, we analyzed for all experiments the fraction of high-quality fragmentation spectra that were matched during database searching. This provides an measure for the unmatched fraction during database searching, and therefore, for the completeness of the reference sequence databases used for database searching. De novo sequence alignment of the unmatched spectra moreover determines whether there are any taxonomies that are not covered by the reference sequence database used for database searching. Finally, the pipeline enables to construct a de novo focused UniRef100 reference sequence databases from the taxonomic composition determined by sequence alignment.
-
-![image](https://github.com/hbckleikamp/NovoLign/assets/49785660/9758d1e9-278c-4d99-975c-85cf3af66f8a)
-
 
 
 #### Running NovoLign 
@@ -57,7 +53,14 @@ After determining the best-performing parameter combinations for the NovoLign pi
 #### What input files does it use? 
 NovoLign is tested to work with .psm output formats from PEAKS de novo sequencing and DeepNovo.
 Any tabular or .txt-like format can be supplied, provided it contains a column of peptide sequences with the header `Peptide`.
-In default operation NovoLign will look for any folder starting with `Input_` within the NovoLign directory (see: Path parameters). Examples of input files are supplied in the folder `Input_p_yeast`
+In default operation NovoLign will look for any folder starting with `Input_` within the NovoLign directory (see: Path parameters). 
+For each folder, the required files are identified with the following syntax:
+- de_novo_file=..\*de novo* *peptides.csv
+- database_searching_file=..\*psm.csv
+- fasta_database=..\*.fasta (used in database qc only)
+- taxa=..\*TaxIDs.txt (used in database qc only)
+
+Examples of input files are supplied in the folder `Input_p_yeast`
 <br>
 
 #### What outputs does it generate? 
@@ -73,17 +76,20 @@ NovoLign generates several output files divided over different folders.
 |database_qc| 5 | comparison of taxonomic composition for de novo annotation to database searching |
 |psms| 5 | Final PSMs format output with NovoLign annotation |
 
+<br>
+Example output vizualisation for experiment quality control, which compares annotation rates for de novo sequenced PSMs at different de novo scores (ALC%) compared to database searching, and checks if the aligned peptide sequences are the same as the peptide sequences found in database searching.
 
 <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB search psm_bins.png" width="450" height="330" align="left">
 <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/de novo peptides_bins.png" width="450" height="330" align="right">
 <br clear="left"/>
 
-
+<br>
+Example output vizualisation for database quality control, which compares the taxonomic composition of PSMs found exclusively in de novo sequencing (DN_only), all de novo PSMs (DN_all), all database searching PSMs (DB_all) and all PSMs unique to low scoring database searching hits.
 <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="450" height="330" align="left">
 <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="450" height="330" align="right">
 <br clear="left"/>
 
-## Parameter options (Placeholder)
+## Parameter options 
 Parameters can be freely changed within the main script.
 There are several parameters that can be changed to include more stringent filtering for de novo peptides.
 
@@ -100,7 +106,7 @@ Path parameters specify which databases should be used.
 |fasta_database_path  ||Location of database fasta file|
 |diamond_database_path||Location of database dmnd file|
 
-
+<br>
 Other parameters specify cutoffs for de novo score, alignment score and taxon frequency, as how use NovoLign to perform database construction.
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
@@ -110,7 +116,7 @@ Other parameters specify cutoffs for de novo score, alignment score and taxon fr
 |Write_to_database| "Proteins"| do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").|
 |DB_rank|"genus"|                 rank specificity  ("OX" "species" "genus" or "family") if "Taxids" is used for Write_to_database |
 
-
+<br>
 
 
 
