@@ -26,7 +26,8 @@ basedir=os.getcwd()
 ##### Use default setup #####
 Default=True                 # If True, will look for setup file and overwrite manual filepaths.  
 
-##### Input filepaths ##### Set Default to False
+##### Input filepaths ##### 
+input_files=glob.glob("".join((basedir,"\*Input_*"))) # location of input folders
 diamond_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond\diamond.exe"
 diamond_folder=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond"
 ncbi_taxonomy_path=   str(Path(basedir,"Setup","ncbi_taxonomy","parsed_ncbi_taxonomy.tsv"))      # placeholder path to parsed ncbi taxonomy
@@ -42,8 +43,6 @@ bit=25                          # minimum bitscore
 freq_cut=5                      # lineage frequency filter for composition and DB creation
 Write_to_database="Proteins"    # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
 DB_rank="genus"                 # "OX" "species" "genus" or "family"
-
-input_files=glob.glob("".join((basedir,"\*Input_*"))) # location of input folders
 
 # =============================================================================
 # END DEFINE PARAMETERS
