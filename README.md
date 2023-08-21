@@ -8,20 +8,12 @@ This is the repository for the NovoLign pipeline, as described in:<br>
 
 The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using PEAKS generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra. NovoLign has been tested and developed in an Anaconda Spyder environment.
 
-
-
-![alt text|100x100,50%](https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg)
-
-
-Fig. 1 CHEW workflow subroutines
-
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg" width="300" height="400" align="right">
 <br>
 
 #### What is NovoLign? 
-<br>
-NovoLign is an tool that uses DIAMOND for error-tolerant annotation of de novo sequenced peptides.
-By aligning to general 
-additionally NovoLign
+NovoLign is an tool that uses DIAMOND for high-througput, error-tolerant annotation of de novo sequenced peptides.
+As de novo sequencing is independent of database composition, it provides an unbiased alternative to conventional database searching methods. By aligning de novo peptides to general databases such as UniRef100, NovoLign can find related peptide sequences, which can aid in construction of sample specific databases, database and experiment quality control, and asses the completeness of references databases.
 
 
 ## Basic use
