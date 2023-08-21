@@ -7,6 +7,10 @@ Date: 26-06-2022
 
 from pathlib import Path
 import pandas as pd
+import numpy as np
+from itertools import chain
+from collections import Counter
+import glob, os
 
 def stacked_bar(ranks,df,ylabel,pathout,filename,plt,os,np): 
 
@@ -35,11 +39,11 @@ def stacked_bar(ranks,df,ylabel,pathout,filename,plt,os,np):
     
     return figname
 
-def graphs(file,Output_directory,ranks,chain,Counter,os,np):
+def graphs(file,Output_directory,ranks,cutbranch):
     
     tsv=pd.read_csv(file, sep='\t', header=0)
-    denoise="off" # switched off when postfilter function used after lca processing
-    cutbranch=5 # default branch cutoff frequency
+    denoise="off" # switched off because postfilter used after lca
+    cutbranch=5 # default cutoff frequency
     tax_normalize=False # normalize to total for that rank
     xlsdf=[]
     xlsdf=tsv
@@ -62,13 +66,13 @@ def graphs(file,Output_directory,ranks,chain,Counter,os,np):
     for rank in ranks:
        
         values=Counter(xlsdf[rank].astype(str))
-        if "" in values.keys(): values.pop("") # ignore unassigned peptides
+        if "" in values.keys(): values.pop("")
             
         values=pd.Series(values).sort_values(axis=0, ascending=False, inplace=False).reset_index()
         values.columns=[rank,rank+"_count"]   
         values=values[values[rank]!=""]
         if tax_normalize==True: 
-            values[rank+"_count"]=values[rank+"_count"]/values[rank+"_count"].sum()*100 # normalize to 100%
+            values[rank+"_count"]=values[rank+"_count"]/values[rank+"_count"].sum()*100
         
         quantdf=pd.concat([quantdf, values], axis=1)
         
@@ -89,6 +93,6 @@ def graphs(file,Output_directory,ranks,chain,Counter,os,np):
     try:
         writer.save()
     except:
-        print(" no table"+str(file))
-        
+        print(" no table for "+str(file))
+
     return quantdfs

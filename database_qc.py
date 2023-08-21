@@ -5,46 +5,54 @@ Created on Mon Aug 29 16:08:28 2022
 modified MP 12 Dec 2022
 
 """
-from __main__ import *
+ranks=["superkingdom","phylum","class","order","family","genus","species"]
 from process_alignment import lca
 import matplotlib.pyplot as plt
-import seaborn as sns
+from collections import Counter
+import more_itertools as mit
+from pathlib import Path
 from Bio import SeqIO
+import seaborn as sns
+import pandas as pd
+import numpy as np
+import os
 
 def assign_ncbi_taxonomy(database_psm_file,# df containing columns: Scan, Accessions (with Scan being a list of Accessions matched to that scan)
                         fasta_file,        # path to fasta file used for annotation
+                        ncbi_taxdf,        
+                        taxids='',         # Diamond taxid output file
                         method="OX",       # "OX", based on taxon id, or "OS", based on name                       
-                        acc_dliml="sp|",   # left delimiter of accession information in fasta header
-                        acc_dlimr=" ",     # right delimiter of accession information in fasta header                       
+                        acc_dlimr=" ",     # Default right delimiter of accession information in fasta header                       
+                        #acc_dlimr="|",    # A baumanii, Aeromonas, Strep mutans, Kleiner, WWTP UP, Chl, HCR, Para ...
                         tax_dliml="OX=",   # left delimiter of taxonomic information in fasta header
                         tax_dlimr=" ",     # right delimiter of taxonomic information in fasta header  
                         ):
     
-    db_df=pd.read_csv(database_psm_file)
-    db_df["Accession"]=db_df["Accession"].str.split(":")
-    odf=db_df[["Scan","Accession"]]
-    if type(odf["Accession"].iloc[0])==list:
-        odf=odf.explode("Accession")
-    adf=[]
-    for record in SeqIO.parse(fasta_file,format="fasta"):
-        d=record.description
-        adf.append([d.split(tax_dliml)[1].split(tax_dlimr)[0],
-                   d.split(acc_dliml)[1].split(acc_dlimr)[0]])
-    adf=pd.DataFrame(adf,columns=[method,"Accession"])
-    odf=odf.merge(adf,on="Accession")
-    odf=odf.merge(ncbi_taxdf.astype(str),on=method,)
-    ldf=lca(odf[["Scan"]+ranks],group_on="Scan") # if single lca return
-    out=db_df.merge(ldf,on="Scan",how="left")
-    return out 
+        db_df=pd.read_csv(database_psm_file)
+        db_df["Accession"]=db_df["Accession"].str.split(":")
+        odf=db_df[["Scan","Accession"]]
 
-
-def smoothstep(x, x_min=0, x_max=1, N=1):
-    x = np.clip((x - x_min) / (x_max - x_min), 0, 1)
-    result = 0
-    for n in range(0, N + 1):
-         result += comb(N + n, n) * comb(2 * N + 1, N - n) * (-x) ** n
-    result *= x ** (N + 1)
-    return result
+        if type(odf["Accession"].iloc[0])==list:
+            odf=odf.explode("Accession")
+        odf.Accession=odf.Accession.str.replace('sp\|', "").str.replace('tr\|', "")
+            
+        adf=[]
+        if len(taxids)<1: #use fasta "OX" info
+            for record in SeqIO.parse(fasta_file,format="fasta"):
+                d=record.description
+                adf.append([d.split(tax_dliml)[1].split(tax_dlimr)[0], d.split('sp|')[1].split(acc_dlimr).pop(0) if 'sp|' in d else d.split('tr|')[1].split(acc_dlimr).pop(0)])
+            adf=pd.DataFrame(adf,columns=[method,"Accession"])
+            odf=odf.merge(adf,on="Accession")
+            
+        else: #use Diamond taxid file from in input folder
+            taxids.Accession=taxids.Accession.str.replace('sp\|', "").str.replace('tr\|', "")
+            #taxids["Accession"] = taxids["Accession"].str.split('|').str[0] # used for P den
+            odf=odf.merge(taxids,on="Accession")
+            
+        odf=odf.merge(ncbi_taxdf.astype(str),on=method,)
+        ldf=lca(odf[["Scan"]+ranks],Output_directory="simple_lca",denovo_peptides="simple_lca",group_on="Scan",method="standard")
+        out=db_df.merge(ldf,on="Scan",how="left")
+        return out
 
 
 class rectangle:
@@ -58,13 +66,14 @@ def merge_taxonomy(dn_df,
                    db_df):
     dn=dn_df[["Scan"]+ranks].astype(str)
     dn.columns=["Scan"]+["dn_"+rank for rank in ranks]
-    db=db_df[["Scan"]+ranks].astype(str)
-    db.columns=["Scan"]+["db_"+rank for rank in ranks]
-    merged_taxonomy=dn.merge(db,on="Scan",how="outer").fillna("nan")
+    db_df['psm']='Y' #add db search identifier
+    db=db_df[["psm"]+["Scan"]+ranks].astype(str)
+    db.columns=["psm"]+["Scan"]+["db_"+rank for rank in ranks]
+    merged_taxonomy=db.merge(dn,on="Scan",how="outer").fillna("nan")
     return merged_taxonomy
 
 
-def Topx_taxa(merged_taxonomy,rank,topx=10):
+def Topx_taxa(merged_taxonomy,rank,topx=15):
         xdf=pd.concat([
         pd.DataFrame(Counter(merged_taxonomy["db_"+rank]).most_common(),columns=[rank,"db"]).set_index(rank),
         pd.DataFrame(Counter(merged_taxonomy["dn_"+rank]).most_common(),columns=[rank,"dn"]).set_index(rank)],
@@ -76,24 +85,51 @@ def Topx_taxa(merged_taxonomy,rank,topx=10):
         cmap=sns.color_palette("Paired",n_colors=topx) 
         [colordict.update({i:cmap[c]}) for c,i in enumerate(unitax)]  
         return unitax,colordict
-    
 
-def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,
+
+def fill_g(x):
+    cons=[np.array(list(g)) for g in mit.consecutive_groups(np.argwhere(x==""))]
+    if cons:
+        for c in cons:  
+            c=c.flatten().tolist()
+            if c[-1]!=len(x)-1:
+                for i in c:
+                    x[i]="gap_"+str(x[c[-1]+1])+"_"+ranks[i]
+    return list(x)
+
+
+def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,Output_directory,ncbi_taxdf,
                 target_ranks=["genus"],
                 write_figure=True,
-                write_data=True):
+                write_data=True,
+                fillgaps=True
+                ):
     
-    database_peptides=assign_ncbi_taxonomy(database_searching_file,fasta_database)
-    merged_taxonomy=merge_taxonomy(denovo_peptides_lca,database_peptides)
+    dn_lca=pd.read_csv(denovo_peptides_lca, delimiter='\t')
+    
+    if taxa=='':
+        database_peptides=assign_ncbi_taxonomy(database_searching_file,fasta_database,ncbi_taxdf)
+    else:
+        taxids = pd.read_csv(taxa, sep = '\t', header=None)
+        taxids.columns = ["Accession","OX", "e-value"]
+        taxids['OX'] = taxids['OX'].apply(str)
+        database_peptides=assign_ncbi_taxonomy(database_searching_file,fasta_database,ncbi_taxdf,taxids=taxids)
+        database_peptides=database_peptides.fillna("")
+    
+    if fillgaps==True:
+        gaps=database_peptides[(database_peptides[ranks]=="").any(axis=1)]
+        u,ix,inv=np.unique(gaps[ranks].apply(";".join,axis=1),return_inverse=True,return_index=True)
+        u=gaps.iloc[ix][ranks].values
+        gap_1=pd.DataFrame(np.array(list((map(fill_g,u))))[inv]).set_index(gaps.index)
+        if gaps.empty == False:
+            database_peptides.loc[gap_1.index,ranks]=gap_1.values      
+            
+    merged_taxonomy=merge_taxonomy(dn_lca,database_peptides)
+    target_ranks=["order","family","genus"]
 
-    target_ranks=["genus"]
-    cols=["dn_"+rank for rank in ranks]+["db_"+rank for rank in ranks]
-
+    #make bar graph
     for rank in target_ranks:        
-        # get topx taxa
         unitax,colordict=Topx_taxa(merged_taxonomy,rank)
-        
-        # make stacked bar graph
         jacols=["dn_"+rank,"db_"+rank]
         ois=[]
         for jcol in jacols:
@@ -103,7 +139,7 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,
         ois=pd.concat(ois,axis=1).fillna(0)
         
         # get DN only
-        dn_only=merged_taxonomy.loc[merged_taxonomy.db_superkingdom=="nan",["dn_"+rank]]
+        dn_only=merged_taxonomy.loc[merged_taxonomy.psm=="nan",["dn_"+rank]]
         dn_only=dn_only[dn_only["dn_"+rank].isin(unitax)].value_counts().to_frame().reset_index().set_index("dn_"+rank)
         # get LQ DB only
         dblq_only=merged_taxonomy.loc[merged_taxonomy.dn_superkingdom=="nan",["db_"+rank]]
@@ -129,8 +165,8 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,
 
             if write_figure:
                fig1=fig.get_figure()
-               fig1.savefig(str(Path(output_folder,rank+"_"+Path(de_novo_file).stem+"_"+str(titles[ix])+"_topX.png")),dpi=400,bbox_inches="tight")
+               fig1.savefig(str(Path(output_folder+"\DB_vs_DN_"+rank+str(titles[ix])+"_topX.png")),dpi=400,bbox_inches="tight")
                
         if write_data:
-            ois.to_csv(str(Path(output_folder,rank+"_"+Path(de_novo_file).stem+"_topx_bars.tsv")),sep="\t")
-            merged_taxonomy.to_csv(str(Path(output_folder,rank+"_"+Path(de_novo_file).stem+"_DN_DB_merged.tsv")),sep="\t")
+            ois.to_csv(str(Path(output_folder+"\DB_vs_DN_"+rank+"_topx_bars.tsv")),sep="\t")
+            merged_taxonomy.to_csv(str(Path(output_folder+"\DB_vs_DN_"+rank+"_DN_DB_merged.tsv")),sep="\t")

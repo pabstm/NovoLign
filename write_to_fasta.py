@@ -38,7 +38,7 @@ def con_csv(peaksfiles):
 
 # universl peaks and deepnovo conversion
 def write_to_fasta(de_novo_file,database_searching_file,Output_directory,          # str: one  novo sequencing output file (full filepath), in .csv or .tsv format
-                   PEAKS_Score_cuttoff=50,             # numeric: mininum required score cutoff (PEAKS score, ALC(%))
+                   base_ALC_Score_cut=40,             # numeric: mininum required score cutoff (PEAKS score, ALC(%))
                    Deepnovo_Score_cutoff=-0.1,         # numeric: mininum required score cutoff (DeepNovo score)
                    ppm_cutoff=None,                    # numeric: maximum ppm tolerance (absolute)
                    length_cutoff=None,                 # numeric: mininum required peptide length
@@ -53,7 +53,6 @@ def write_to_fasta(de_novo_file,database_searching_file,Output_directory,       
                                 "ALC (%)","predicted_score"] # which data should be retained in the fasta output [Scan and Target_Decoy are minimum requirements for the script to run]
                    ): 
 
- 
  
     # dynamic delimiter detection
     if de_novo_file.endswith('.csv'):
@@ -88,7 +87,7 @@ def write_to_fasta(de_novo_file,database_searching_file,Output_directory,       
                 if i in df.columns:
                     df[i]=df[i].astype(float) 
     
-    if (type(PEAKS_Score_cuttoff  )!=type(None)) & ('ALC (%)'         in df.columns): df=df[df['ALC (%)'         ]>=PEAKS_Score_cuttoff]   # filter on scoring Peaks 
+    if (type(base_ALC_Score_cut   )!=type(None)) & ('ALC (%)'         in df.columns): df=df[df['ALC (%)'         ]>=base_ALC_Score_cut]   # filter on scoring Peaks 
     if (type(Deepnovo_Score_cutoff)!=type(None)) & ('predicted_score' in df.columns): df=df[df['predicted_score' ]<=Deepnovo_Score_cutoff] # filter on scoring Deepnovo 
     if (type(ppm_cutoff           )!=type(None)) & ('ppm'             in df.columns): df=df[df['ppm'             ]<=ppm_cutoff]            # filter on ppm
     if (type(length_cutoff        )!=type(None)) & ('Area'            in df.columns): df=df[df['Area'            ]>=Area_cutoff]           # filter on area

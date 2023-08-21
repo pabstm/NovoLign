@@ -1,6 +1,5 @@
 """
 module for taxonomic grouping using various LCAs
-
 Author: mpabst
 Date: 26-06-2022
 """
@@ -20,15 +19,14 @@ def align(input_files,Output_directory, # peptides in fasta format
                       select=" -k50 ", # can be --top x% or --max-target-seqs/-k
                       block_size=5,
                       index_chunks=1,
-                      minimum_pident=80,
+                      minimum_pident=85,
                       minimum_coverage=80,
                       minimum_bitscore=20,
-                      gap_open=0,
-                      gap_extend=8 
+                      gap_open=2,
+                      gap_extend=4 
                       ):
     
-
-
+    
     output_folder=str(Path(Output_directory,"diamond_alignments"))    
     if not os.path.exists(output_folder): os.mkdir(output_folder)
     
@@ -65,11 +63,6 @@ def align(input_files,Output_directory, # peptides in fasta format
 
         stdout, stderr =subprocess.Popen(batfile, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         shutil.move(str(Path(basedir,"diamond.log")), str(Path(Output_directory ,output_folder,Path(input_file).stem+".log")))
-
-        # stdout, stderr =subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        # print(stderr) 
-        # shutil.move(str(Path(basedir,"diamond.log")), str(Path(Output_directory,output_folder,Path(input_file).stem+".log")))
-        
         output_files.extend([output_file])
         
     return output_files  
