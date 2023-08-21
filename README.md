@@ -12,7 +12,8 @@ The pipeline was established and tested with shotgun (meta)proteomics data obtai
 <br>
 
 #### What is NovoLign? 
-NovoLign is an tool that uses DIAMOND for high-througput, error-tolerant annotation of de novo sequenced peptides.
+NovoLign is a tool for rapid annotation of de novo sequenced peptides with homology alignment.
+It uses DIAMOND for high-througput, error-tolerant annotation of de novo sequenced peptides.
 As de novo sequencing is independent of database composition, it provides an unbiased alternative to conventional database searching methods. By aligning de novo peptides to general databases such as UniRef100, NovoLign can find related peptide sequences, which can aid in construction of sample specific databases, database and experiment quality control, and asses the completeness of references databases.
 
 
@@ -27,47 +28,34 @@ Lastly, scripts are supplied for automated downloading of DIAMOND.
 
 <br>
 
-#### How does it work? (Placeholder)
+#### How does it work? 
 
 The NovoLign pipeline consists of 5 parts:
-1. *DIAMOND alignment* 
-2. *Lowest Common Ancestor analysis (LCA)*
-3. *Taxonomy report*
-4. *Spectral quality report*
-5. *Database coverage report*
+1. *DIAMOND alignment* : Homology alignment is performed with parameters optimized for de novo sequencing errors. <br>
+2. *Lowest Common Ancestor analysis (LCA)* : Different LCA algorithms are employed to maximize taxonomic specificity. <br>
+3. *Taxonomy report* : Taxonomic quantification is performed with tabular and visual output. <br>
+4. *Spectral quality report* : An assessment of experiment quality control is performed based on de novo scores and annotation rates.  <br>
+5. *Database coverage report* : Optionally: to perform quality control on a reference database, outputs of de novo sequencing are compared against database searching outputs.  <br>
 
-In Part 1: input files are read, parsed, filtered and submitted to Unipept for taxonomic and functional annotations. <br>
-In Part 2: Unipept taxonomic annotations are quantified, and visual outputs are generated. <br>
-In Part 3: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
-In Part 4: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
-In Part 5: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
 
+
+
+#### What does it do? 
 <br>
-Using alignment parameters optimized to short peptide homology
-
-LCAs optimized for short peptide homology
-
-#### What does it do? (Placeholder)
-<br>
-Outputs
+After determining the best-performing parameter combinations for the NovoLign pipeline using synthetic communities, we evaluated its general practicability by studying a range of pure reference strains, enrichment cultures, and complex microbial communities. In addition to determining microbial composition using de novo sequence alignment, we analyzed for all experiments the fraction of high-quality fragmentation spectra that were matched during database searching. This provides an measure for the unmatched fraction during database searching, and therefore, for the completeness of the reference sequence databases used for database searching. De novo sequence alignment of the unmatched spectra moreover determines whether there are any taxonomies that are not covered by the reference sequence database used for database searching. Finally, the pipeline enables to construct a de novo focused UniRef100 reference sequence databases from the taxonomic composition determined by sequence alignment.![image](https://github.com/hbckleikamp/NovoLign/assets/49785660/9758d1e9-278c-4d99-975c-85cf3af66f8a)
 
 
-   # 1. Conventional lca
-        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="standard",filter_cutoff=freq_cut,minimum_rank=DB_rank,write_database=DB)
-        # 2. Bitsore lca 
-        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore",filter_cutoff=freq_cut)
-        # # 3. Weighted lca
-        denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",filter_cutoff=freq_cut)
-     
 
 #### Running NovoLign 
-- Novobridge is designed as a single "tunable" python script.
-- Novobridge does not offer command line options, but parameters can be altered in the script Novobridge.py
+- NovoLign is designed as a single "tunable" python script.
+- NovoLign does not offer command line options, but parameters can be altered in the main script.
 
 
 
 #### What input files does it use? 
-
+NovoLign is tested to work with .psm output formats from PEAKS de novo sequencing and DeepNovo.
+Any tabular or .txt-like format can be supplied, provided it contains a column of peptide sequences with the header `Peptide`.
+In default operation NovoLign will look for any folder starting with `Input_` within the NovoLign directory (see: Path parameters). Examples of input files are supplied in the folder `Input_p_yeast`
 <br>
 
 #### What outputs does it generate? 
@@ -79,28 +67,28 @@ Parameters can be freely changed within the main script.
 There are several parameters that can be changed to include more stringent filtering for de novo peptides.
 
 
-Path parameters 
+Path parameters specify which databases should be used. 
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
 |Default| True|                 If True, will look for setup file and overwrite manual filepaths.|  
-|diamond_path| ..\CHEW\Setup\diamond\diamond.exe||
-|diamond_folder| ..\CHEW\Setup\diamond\||
-|ncbi_taxonomy_path|  ..\CHEW\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv||        
-|fasta_database_path  |||
-|diamond_database_path|||
+|input_files| ..\CHEW\*Input_*| Location of input folder
+|diamond_path| ..\CHEW\Setup\diamond\diamond.exe |Location of DIAMOND executable|
+|diamond_folder| ..\CHEW\Setup\diamond\ |Location of DIAMOND folder|
+|Temporary_directory| ..\CHEW\ |    Folder for writing temporary DIAMOND indices |
+|ncbi_taxonomy_path|  ..\CHEW\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv|Location of linear NCBI taxonomy|        
+|fasta_database_path  ||Location of database fasta file|
+|diamond_database_path||Location of database dmnd file|
 
-Path parameters specify which databases should be used. 
 
-
-Filter parameters
+Other parameters specify cutoffs for de novo score, alignment score and taxon frequency, as how use NovoLign to perform database construction.
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
-|min_ALC_score|70                numeric, minimum required ALC score (Peaks score)|
-|bit |25       |                   numeric, minimum required bitscore for alignment|
-|freq_cut|5                      numeric, minimum lineage frequency filter for composition and DB creation
+|min_ALC_score| 70 |               numeric, minimum required ALC score (Peaks score)|
+|bit | 25 |                   numeric, minimum required bitscore for alignment|
+|freq_cut|5 |                     numeric, minimum lineage frequency filter for composition and DB creation|
 |Write_to_database| "Proteins"| do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").|
 |DB_rank|"genus"|                 rank specificity  ("OX" "species" "genus" or "family") if "Taxids" is used for Write_to_database |
-|Temporary_directory| ..\CHEW\|    folder for writing temporary DIAMOND indices |
+
 
 
 
