@@ -70,7 +70,7 @@ There are several parameters that can be changed to include more stringent filte
 The pipeline is licensed with standard MIT-license. <br>
 If you would like to use this pipeline in your research, please cite the following papers: 
       
-- Placeholder <br>         
+- NovoLign: metaproteomic profiling by de novo sequence alignment <br>         
 
 - Kleikamp, Hugo BC, et al. "Database-independent de novo metaproteomics of complex microbial communities." Cell Systems 12.5 (2021): 375-383.
 
