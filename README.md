@@ -10,7 +10,7 @@ The pipeline was established and tested with shotgun (meta)proteomics data obtai
 
 
 
-![alt text](https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg)
+![alt text|100x100,50%](https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg)
 
 
 Fig. 1 CHEW workflow subroutines
