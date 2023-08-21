@@ -25,7 +25,6 @@ basedir=os.getcwd()
 
 ##### Use default setup #####
 Default=True                 # If True, will look for setup file and overwrite manual filepaths.  
-Write_to_database="Proteins" # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
 
 ##### Input filepaths ##### Set Default to False
 diamond_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond\diamond.exe"
@@ -40,7 +39,7 @@ diamond_database_path=r"O:\USProtIL\uniprot_sprotIL.dmnd"
 min_ALC_score=70                # minimum ALC(%)
 bit=25                          # minimum bitscore
 freq_cut=5                      # lineage frequency filter for composition and DB creation
-DB="False"                      # "Taxids" "Proteins" or "False"
+Write_to_database="Proteins"    # Options (False, "Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
 DB_rank="genus"                 # "OX" "species" "genus" or "family"
 Temporary_directory=basedir     # DMD temmporary folder
 input_files=glob.glob("".join((basedir,"\*Input_*"))) # location of input folders
