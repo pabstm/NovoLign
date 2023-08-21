@@ -34,15 +34,17 @@ The NovoLign pipeline consists of 5 parts:
 1. *DIAMOND alignment* : Homology alignment is performed with parameters optimized for de novo sequencing errors. <br>
 2. *Lowest Common Ancestor analysis (LCA)* : Different LCA algorithms are employed to maximize taxonomic specificity. <br>
 3. *Taxonomy report* : Taxonomic quantification is performed with tabular and visual output. <br>
-4. *Spectral quality report* : An assessment of experiment quality control is performed based on de novo scores and annotation rates.  <br>
+4. *Spectral quality report* : Optionally: An assessment of experiment quality control is performed based on de novo scores and annotation rates.  <br>
 5. *Database coverage report* : Optionally: to perform quality control on a reference database, outputs of de novo sequencing are compared against database searching outputs.  <br>
 
 
 
 
 #### What does it do? 
-<br>
-After determining the best-performing parameter combinations for the NovoLign pipeline using synthetic communities, we evaluated its general practicability by studying a range of pure reference strains, enrichment cultures, and complex microbial communities. In addition to determining microbial composition using de novo sequence alignment, we analyzed for all experiments the fraction of high-quality fragmentation spectra that were matched during database searching. This provides an measure for the unmatched fraction during database searching, and therefore, for the completeness of the reference sequence databases used for database searching. De novo sequence alignment of the unmatched spectra moreover determines whether there are any taxonomies that are not covered by the reference sequence database used for database searching. Finally, the pipeline enables to construct a de novo focused UniRef100 reference sequence databases from the taxonomic composition determined by sequence alignment.![image](https://github.com/hbckleikamp/NovoLign/assets/49785660/9758d1e9-278c-4d99-975c-85cf3af66f8a)
+
+After determining the best-performing parameter combinations for the NovoLign pipeline using synthetic communities, we evaluated its general practicability by studying a range of pure reference strains, enrichment cultures, and complex microbial communities. In addition to determining microbial composition using de novo sequence alignment, we analyzed for all experiments the fraction of high-quality fragmentation spectra that were matched during database searching. This provides an measure for the unmatched fraction during database searching, and therefore, for the completeness of the reference sequence databases used for database searching. De novo sequence alignment of the unmatched spectra moreover determines whether there are any taxonomies that are not covered by the reference sequence database used for database searching. Finally, the pipeline enables to construct a de novo focused UniRef100 reference sequence databases from the taxonomic composition determined by sequence alignment.
+
+![image](https://github.com/hbckleikamp/NovoLign/assets/49785660/9758d1e9-278c-4d99-975c-85cf3af66f8a)
 
 
 
@@ -60,7 +62,26 @@ In default operation NovoLign will look for any folder starting with `Input_` wi
 
 #### What outputs does it generate? 
 
-<br>
+NovoLign generates several output files divided over different folders.
+|Folder        | Section | Contents|
+|-----------------|:-----------:|---------------|
+|diamond_fasta| 1 | generated fasta file for DIAMOND alignment|
+|diamond_alignments| 1 | DIAMOND alignment|
+|lca| 2 | different LCA outputs: conventional (CON) weighted (W), bitscore weighted (BIT) |
+|composition| 3 | composition for different LCA outputs
+|experiment_qc| 4 | comparison of de novo annotation rate per de novo score to database searching|
+|database_qc| 5 | comparison of taxonomic composition for de novo annotation to database searching |
+|psms| 5 | Final PSMs format output with NovoLign annotation |
+
+
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB search psm_bins.png" width="450" height="330" align="left">
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/de novo peptides_bins.png" width="450" height="330" align="right">
+<br clear="left"/>
+
+
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="450" height="330" align="left">
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="450" height="330" align="right">
+<br clear="left"/>
 
 ## Parameter options (Placeholder)
 Parameters can be freely changed within the main script.
