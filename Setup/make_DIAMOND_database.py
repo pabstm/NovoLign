@@ -14,16 +14,14 @@ basedir=str(Path(os.getcwd()).parents[0]) #change base directory to HybridCycler
 os.chdir(basedir)
 print(os.getcwd())
 
- 
 
 import subprocess
-def make_diamond_database(diamond_path,database_path,path=False,delete_old=False):
+def make_diamond_database(diamond_path,database_path,outpath,path=False,delete_old=False):
     
-    if not path:
-        path=database_path
-    ppath=Path(path).parents[0]
-    outpath=str(Path(ppath,Path(ppath.stem))) #remove path extension (needed for diamond command syntax)
-    
+    # if not path:
+    #     path=database_path
+    # ppath=Path(path).parents[0]
+    # #outpath=str(Path(ppath,Path(ppath.stem))) #remove path extension (needed for diamond command syntax)
 
     command="cd "+'"'+str(Path(diamond_path).parents[0]) +'"'+ " && "
     command+="diamond makedb --in "+'"'+database_path+'"' + " -d "+'"'+outpath+'"'
@@ -34,4 +32,5 @@ def make_diamond_database(diamond_path,database_path,path=False,delete_old=False
         os.remove(database_path)
 
     return outpath+".dmnd"
+
 

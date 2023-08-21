@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jan 10 12:20:18 2023
-
 @author: hugokleikamp
 """
 
@@ -12,14 +11,11 @@ from inspect import getsourcefile
 os.chdir(str(Path(os.path.abspath(getsourcefile(lambda:0))).parents[0]))
 script_dir=os.getcwd()
 print(os.getcwd())
-
 basedir=os.getcwd()
 
 #%% import 
 import urllib, gzip, zipfile, shutil, tarfile, time, requests
 from sys import platform
-
-
 
 def download(url,filename):
 
@@ -32,10 +28,7 @@ def download(url,filename):
             except:
                 time.sleep(2)
                 print("retry")
-        
         return filename
-        
-
         
 
 def extract(path): #path to folder
@@ -87,7 +80,7 @@ def download_extract(urls,path,
     for url in urls:
         print(url)
         
-        filename  = str(Path(path,url.split("/")[-1]))
+        filename = str(Path(path,url.split("/")[-1]))
         if not os.path.exists(path): os.mkdir(path)
         
         #Add prompt if exists!
@@ -101,7 +94,6 @@ def download_extract(urls,path,
             if w == "n":
                 continue
         
-        
         while True:
             try:
                 file=download(url,filename) #download
@@ -111,13 +103,10 @@ def download_extract(urls,path,
             except:
                 #in case of incomplete download, decompression can fail, so retry
                 os.remove(str(Path(path,filename)))
-            
-        
 
         for root, dirs, files in os.walk(path):
             for d in dirs:
                 extract(str(Path(root,d)))
-       
 
         #return all fasta files
         fastas=[]
@@ -126,20 +115,16 @@ def download_extract(urls,path,
                 for ext in fasta_exts:
                     if file.endswith(ext):
                         fastas.append(str(Path(root,file)))
-     
-        return list(set(fastas))
-          
-        
-        
+ 
+    return list(set(fastas))
         
 #%%
-
 
 #Wrapper for downloading db
 def download_db(DB,path=False):
 
     #RefSeq
-    if DB=="RefSeq":
+    if DB=="RefSeq": #Refseq select
         urls=requests.get("https://ftp.ncbi.nlm.nih.gov/blast/db/refseq_protein-prot-metadata.json").json().get("files")
         if not path: path=str(Path(basedir,"RefSeq"))
     
@@ -184,8 +169,6 @@ def download_db(DB,path=False):
     
     return fasta_files
 
-
-
 def download_ncbi_taxdump(path=False):
 
     urls="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"    
@@ -207,10 +190,10 @@ def download_diamond(path=False):
 
     if platform == "linux" or platform == "linux2":
         # linux
-        urls="https://github.com/bbuchfink/diamond/releases/download/v2.0.12/diamond-linux64.tar.gz"
+        urls="https://github.com/bbuchfink/diamond/releases/download/v2.1.8/diamond-linux64.tar.gz"
     elif platform == "win32":
         # Windows
-        urls="https://github.com/bbuchfink/diamond/releases/download/v2.0.12/diamond-windows.zip"    
+        urls="https://github.com/bbuchfink/diamond/releases/download/v2.1.8/diamond-windows.zip"    
     else:
         print("this pipeline only supports widows or linux systems, since DIAMOND installation on OSX requires Miniconda")
         return
@@ -222,5 +205,3 @@ def download_diamond(path=False):
         if i.startswith("diamond"):
             return str(Path(path,i))
     
-    
-

@@ -15,7 +15,6 @@ print(os.getcwd())
 
 #%% import 
 
-
 import shutil
 import Bio
 from Bio import SeqIO
