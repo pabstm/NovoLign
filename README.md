@@ -29,6 +29,18 @@ Lastly, scripts are supplied for automated downloading of DIAMOND.
 
 #### How does it work? (Placeholder)
 
+The NovoLign pipeline consists of 5 parts:
+1. *DIAMOND alignment* 
+2. *Lowest Common Ancestor analysis (LCA)*
+3. *Taxonomy report*
+4. *Spectral quality report*
+5. *Database coverage report*
+
+In Part 1: input files are read, parsed, filtered and submitted to Unipept for taxonomic and functional annotations. <br>
+In Part 2: Unipept taxonomic annotations are quantified, and visual outputs are generated. <br>
+In Part 3: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
+In Part 4: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
+In Part 5: Unipept functional annotations are matched to KEGG orthologies and quantified. <br>
 
 <br>
 Using alignment parameters optimized to short peptide homology
@@ -40,19 +52,25 @@ LCAs optimized for short peptide homology
 Outputs
 
 
+   # 1. Conventional lca
+        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="standard",filter_cutoff=freq_cut,minimum_rank=DB_rank,write_database=DB)
+        # 2. Bitsore lca 
+        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore",filter_cutoff=freq_cut)
+        # # 3. Weighted lca
+        denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",filter_cutoff=freq_cut)
+     
+
+#### Running NovoLign 
+- Novobridge is designed as a single "tunable" python script.
+- Novobridge does not offer command line options, but parameters can be altered in the script Novobridge.py
 
 
-#### Running NovoLign (Placeholder)
+
+#### What input files does it use? 
 
 <br>
 
-
-
-#### What input files does it use? (Placenhlder)
-
-<br>
-
-#### What outputs does it generate? (Placeholder)
+#### What outputs does it generate? 
 
 <br>
 
@@ -61,6 +79,28 @@ Parameters can be freely changed within the main script.
 There are several parameters that can be changed to include more stringent filtering for de novo peptides.
 
 
+Path parameters 
+|Parameter        |Default value| Description|
+|-----------------|:-----------:|---------------|
+|Default| True|                 If True, will look for setup file and overwrite manual filepaths.|  
+|diamond_path| ..\CHEW\Setup\diamond\diamond.exe||
+|diamond_folder| ..\CHEW\Setup\diamond\||
+|ncbi_taxonomy_path|  ..\CHEW\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv||        
+|fasta_database_path  |||
+|diamond_database_path|||
+
+Path parameters specify which databases should be used. 
+
+
+Filter parameters
+|Parameter        |Default value| Description|
+|-----------------|:-----------:|---------------|
+|min_ALC_score|70                numeric, minimum required ALC score (Peaks score)|
+|bit |25       |                   numeric, minimum required bitscore for alignment|
+|freq_cut|5                      numeric, minimum lineage frequency filter for composition and DB creation
+|Write_to_database| "Proteins"| do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").|
+|DB_rank|"genus"|                 rank specificity  ("OX" "species" "genus" or "family") if "Taxids" is used for Write_to_database |
+|Temporary_directory| ..\CHEW\|    folder for writing temporary DIAMOND indices |
 
 
 
