@@ -23,19 +23,16 @@ basedir=os.getcwd()
 # BEGIN DEFINE PARAMETERS
 # =============================================================================
 
-##### Use default setup #####
-Default=True                 # If True, will look for setup file and overwrite manual filepaths.  
-
 ##### Input filepaths ##### 
+
 input_files=glob.glob("".join((basedir,"\*Input_*"))) # location of input folders
-diamond_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond\diamond.exe"
-diamond_folder=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond"
+fasta_database_path  =str(Path(basedir,"Setup","Swiss-Prot\\uniprot_sprot_NoAmb_IJeqL.fasta")) 
+diamond_database_path=str(Path(basedir,"Setup","Swiss-Prot\\uniprot_sprot_NoAmb_IJeqL.dmnd"))
+
+diamond_path=str(Path(basedir,"Setup","diamond","diamond.exe"))
+diamond_folder=str(Path(basedir,"Setup","diamond"))
 ncbi_taxonomy_path=   str(Path(basedir,"Setup","ncbi_taxonomy","parsed_ncbi_taxonomy.tsv"))      # placeholder path to parsed ncbi taxonomy
-fasta_database_path  =r"O:\USProtIL\uniprot_sprot.fasta"
-diamond_database_path=r"O:\USProtIL\uniprot_sprotIL.dmnd"  
 Temporary_directory=basedir     # DMD temmporary folder
-#diamond_database_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\UniRef100\UniRef100IL.dmnd"
-#fasta_database_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\UniRef100\uniref100_NoAmb_IJeqL.fasta"
 
 #### Performance parameters ####
 min_ALC_score=70                # minimum ALC(%)
@@ -78,7 +75,7 @@ for infolder in input_files:
     """
     Prepare folders and paths
     """
-    Output_directory=str(Path(Path(infolder).parents[0],Path(infolder).name.replace("Input_","UniRef100_Output_")))
+    Output_directory=str(Path(Path(infolder).parents[0],Path(infolder).name.replace("Input_","Output_")))
     if not os.path.exists(Output_directory): os.mkdir(Output_directory)
     if not os.path.exists(Temporary_directory): os.mkdir(Temporary_directory)
 
@@ -101,11 +98,26 @@ for infolder in input_files:
     print("Step 2 of 5: Construct LCAs")
     for target_decoy in target_decoys: 
         # 1. Conventional lca
-        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="conventional",filter_cutoff=freq_cut,minimum_rank=DB_rank,write_database=DB)
+        denovo_peptides_lca=lca(target_decoy,Output_directory,
+                                denovo_peptides=denovo_peptides,
+                                method="conventional",
+                                filter_cutoff=freq_cut,
+                                minimum_rank=DB_rank,
+                                write_database=Write_to_database)
         # 2. Bitsore lca 
-        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="bitscore",weight_column="bitscore",filter_cutoff=freq_cut)
+        denovo_peptides_blca=lca(target_decoy,Output_directory,
+                                 denovo_peptides=denovo_peptides,
+                                 method="bitscore",weight_column="bitscore",
+                                 filter_cutoff=freq_cut,
+                                 minimum_rank=DB_rank,
+                                 write_database=Write_to_database)
         # # 3. Weighted lca
-        denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",filter_cutoff=freq_cut)
+        denovo_peptides_wlca=lca(target_decoy,Output_directory,
+                                 denovo_peptides=denovo_peptides,
+                                 method="weighted",weight_column="weights",
+                                 filter_cutoff=freq_cut,
+                                 minimum_rank=DB_rank,
+                                 write_database=Write_to_database)
 
     """
     3/5 Grouped taxonomy report
@@ -117,14 +129,14 @@ for infolder in input_files:
     """
     4/5 Check quality of fragmentation spectra
     """  
-    #print("Step 4 of 5: Check spectral quality")
+    print("Step 4 of 5: Check spectral quality")
     Plot_high_scoring(denovo_peptides,target_decoys[0],database_searching_file,Output_directory,de_novo_file)
     
 
     """
     5/5 Check coverage obtained by database searching
     """
-    # print("Step 5 of 5: Check DB searching output")
+    print("Step 5 of 5: Check DB searching output")
     Compare_Bar(denovo_peptides_wlca,database_searching_file,fasta_database,taxa,Output_directory,ncbi_taxdf)
 
 # =============================================================================

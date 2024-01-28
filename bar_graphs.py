@@ -89,10 +89,13 @@ def graphs(file,Output_directory,ranks,cutbranch):
     writer=pd.ExcelWriter(xlsfilename, engine='xlsxwriter')
     quantdf[namecols].to_excel(writer, sheet_name='TAX_LINEAGES')
     quantdf[countcols].to_excel(writer, sheet_name='TAX_COUNTS')
-    quantdf.to_excel(writer, sheet_name='COMBINED')   
+    quantdf.to_excel(writer, sheet_name='COMBINED')  
+    
+
     try:
-        writer.save()
-    except:
+        writer.close()
+    except Exception as error:
+        print("An error occurred:", type(error).__name__, "–", error)
         print(" no table for "+str(file))
 
     return quantdfs

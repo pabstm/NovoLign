@@ -231,7 +231,7 @@ def Proteins_to_fasta(df,                       #processed diamond alignment
                       removed_proteins=[],      #input: list of proteins that are excluded from database
                       minimum_rank="",          #input: taxonomic rank, in case lca is supplied, this can only select lcas with a certain level of taxonomic detail 
                       add_decoy=False,          #add reverse decoy of aligned proteins to database
-                      add_denovo_peptides=True, #add de novo peptides to database (not included in decoy)
+                      add_denovo=True,          #directly add the de novo peptides as database entries (not included in decoy)
                       ):
   
     if "full_sseq" not in df.columns:
@@ -252,7 +252,7 @@ def Proteins_to_fasta(df,                       #processed diamond alignment
     if add_decoy:
         fasta_str+="\n".join((">"+"decoy_"+df.stitle+"\n"+df.full_sseq.str[::-1]))+"\n"  #reversed decoy
         
-    if add_denovo_peptides:
+    if add_denovo:
         dn_peptides=df.qseq.drop_duplicates().reset_index()
         fasta_str+="\n".join((">"+"DeNovo_"+dn_peptides["index"].astype(str)+"\n"+dn_peptides["qseq"]))+"\n"
   
@@ -268,19 +268,20 @@ def lca(df,                                  # dataframe with columns named Pept
         #Weighing parameters
         method="weighted",                   # Options: False (conventional LCA), "weighted" (weighted lca), "bitscore" (bitscore lca)
         weight_rank="genus",                 # weighted weighs on a specific rank
-        weight_column='corrected_weights',   # options: weights, corrected_weights, bitscore, score, weighted_score, corrected_weighted_score
+        weight_column='weights',             # options: weights,  bitscore
         protein_column="sseqid",             # name of column containing protein accessions, will be retained according to lca 
         taxid_column="OX",                   # name of column containing taxonomy ids, will be retained according to lca 
         weight_cutoff=0.6,                   # minimum fraction of total weights 
         filter_cutoff=5,                     # post-lca filtering                  
         
         #options for database construction
-        write_database="False",              # Options ("False","Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
+        write_database=False,              # Options ("False","Proteins","Taxids"): do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").
         minimum_rank="OX",                   # Only used when writing database based on taxonomy
         add_decoy=False,                     # add a reversed decoy sequences to the database
-        add_denovo=False,                    # add the denovo sequences peptides to the database
+        add_denovo=False,                    #directly add the de novo peptides as database entries (not included in decoy)
         ):
-    
+
+
     #separate alignments based on target/decoys
     if df.columns.str.contains('alignment_Target_Decoy').any():
         df_target = df.loc[df['alignment_Target_Decoy'] == 'Target']
@@ -320,8 +321,8 @@ def lca(df,                                  # dataframe with columns named Pept
                 cut_df=pd.concat([x.iloc[0:(x[weight_column].cumsum()<weight_cutoff).sum()+1] for n,x in group])
                 df=df[(df[group_on]+df[weight_rank]).isin(cut_df[group_on]+cut_df[weight_rank])]
             
-            lcas=df.groupby(group_on)[ranks].nth(0)[(df.groupby(group_on)[ranks].nunique()==1)] #vectorized conventional lca
-            
+ 
+            lcas=df.set_index(group_on).groupby(group_on)[ranks].nth(0)[(df.set_index(group_on).groupby(group_on)[ranks].nunique()==1)] #vectorized conventional lca
             if Output_directory == "simple_lca":
                 return lcas
                 
@@ -373,7 +374,7 @@ def lca(df,                                  # dataframe with columns named Pept
         lcas.loc[lcas["taxids"].isnull(),"taxids"] = lcas.loc[lcas["taxids"].isnull(),"taxids"].apply(lambda x: [""])
         lcas["proteins"]=lcas["proteins"].apply(lambda x: ", ".join(x))  
         lcas["taxids"]=lcas["taxids"].apply(lambda x: ", ".join(x))
-        
+    
         if df.iloc[0, df.columns.get_loc('alignment_Target_Decoy')] == 'Decoy':
             file=str(Path(Output_directory,"lca",prefix+str(filter_cutoff)+"_DECOY_lca.tsv"))
             lcas.to_csv(file,sep="\t")
@@ -382,7 +383,7 @@ def lca(df,                                  # dataframe with columns named Pept
             lcas.to_csv(file,sep="\t")            
           
             #write DN bitscore database
-            db_out=str(Path(Output_directory,"database",prefix+write_database+"_"+minimum_rank+"_DN_bitscore_referenc_database.fasta"))
+            db_out=str(Path(Output_directory,"database",prefix+write_database+"_"+minimum_rank+"_DN_database.fasta"))
             if write_database=="Proteins":
                 fasta_str=Proteins_to_fasta(df,lcas,removed_proteins=removed_proteins,add_denovo=add_denovo)
                 if fasta_str:

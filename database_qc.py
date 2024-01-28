@@ -99,11 +99,13 @@ def fill_g(x):
 
 
 def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,Output_directory,ncbi_taxdf,
-                target_ranks=["genus"],
+                target_ranks=["order","family","genus"],
                 write_figure=True,
                 write_data=True,
                 fillgaps=True
                 ):
+    #%%
+    
     
     dn_lca=pd.read_csv(denovo_peptides_lca, delimiter='\t')
     
@@ -125,7 +127,7 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,
             database_peptides.loc[gap_1.index,ranks]=gap_1.values      
             
     merged_taxonomy=merge_taxonomy(dn_lca,database_peptides)
-    target_ranks=["order","family","genus"]
+
 
     #make bar graph
     for rank in target_ranks:        
@@ -146,7 +148,9 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,
         dblq_only=dblq_only[dblq_only["db_"+rank].isin(unitax)].value_counts().to_frame().reset_index().set_index("db_"+rank) 
         # make bars
         ois=pd.concat([dn_only,ois,dblq_only],axis=1).fillna(0)
-        ois.columns=["DN_only","DN_all","DB_all","DBLQ_only"]
+        ois.columns=["DN_only","DN_all","DB_all","DB_only"]
+        ois=ois[["DB_all","DB_only","DN_all","DN_only"]]
+        
         nois=ois/ois.sum()*100
         # make path
         output_folder=str(Path(Output_directory,"database_qc")) 
@@ -154,7 +158,7 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,
         
         # create graph
         titles=["absolute","normalized"]
-        ylabels=["# of scans","norm abundance"]
+        ylabels=["Number of scans","Normalized abundance"]
         for ix,i in enumerate([ois,nois]):
             n=len(i)
             cmap=sns.color_palette("hls", n_colors=n)
@@ -165,8 +169,9 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,
 
             if write_figure:
                fig1=fig.get_figure()
-               fig1.savefig(str(Path(output_folder+"\DB_vs_DN_"+rank+str(titles[ix])+"_topX.png")),dpi=400,bbox_inches="tight")
+               fig1.savefig(str(Path(output_folder,"DB_vs_DN_"+rank+str(titles[ix])+"_topX.png")),dpi=400,bbox_inches="tight")
                
-        if write_data:
-            ois.to_csv(str(Path(output_folder+"\DB_vs_DN_"+rank+"_topx_bars.tsv")),sep="\t")
-            merged_taxonomy.to_csv(str(Path(output_folder+"\DB_vs_DN_"+rank+"_DN_DB_merged.tsv")),sep="\t")
+            if write_data:
+                ois.to_csv(str(Path(output_folder,"DB_vs_DN_"+rank+"_topx_bars.tsv")),sep="\t")
+    if write_data:
+        merged_taxonomy.to_csv(str(Path(output_folder,"DN_DB_merged.tsv")),sep="\t")

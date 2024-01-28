@@ -72,7 +72,7 @@ def Plot_high_scoring(peptide_df, # all possible DN sequences
                  element="bars", legend=True)
     ax.set_title(Path(de_novo_file).stem)
     ax.set_xlabel(metric)
-    ax.set_ylabel("percentage of total (%)")
+    ax.set_ylabel("Number of scans")
 
     # plot database searching histogram
     if database_searching_file!=None:
@@ -96,7 +96,7 @@ def Plot_high_scoring(peptide_df, # all possible DN sequences
                       element="bars", legend=True)
         ax.set_title(Path(database_searching_file).stem)
         ax.set_xlabel(metric)
-        ax.set_ylabel("percentage of total (%)")
+        ax.set_ylabel("Number of scans")
     
         if write_figure:
             figdb.savefig(str(Path(Output_directory,output_folder,Path(database_searching_file).stem+"_bins.png")),dpi=300,bbox_inches="tight")
