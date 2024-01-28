@@ -134,7 +134,7 @@ def prep_database(
                 decoy["description"]=decoy_delimiter+decoy["description"]
                 chunk_df=pd.concat([chunk_df,decoy])
                 
-            f.write("\n"+"\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"]))
+            f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"]))
 
     if delete_old:
         os.remove(Path_to_db)

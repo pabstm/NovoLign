@@ -10,27 +10,25 @@ import os
 from pathlib import Path
 from inspect import getsourcefile
 os.chdir(str(Path(os.path.abspath(getsourcefile(lambda:0))).parents[0]))
-basedir=str(Path(os.getcwd()).parents[0]) #change base directory to HybridCycler
+basedir=str(Path(os.getcwd()).parents[0]) 
 os.chdir(basedir)
 print(os.getcwd())
 
 
 import subprocess
-def make_diamond_database(diamond_path,database_path,outpath,path=False,delete_old=False):
+def make_diamond_database(diamond_path,database_path,output_path=False,delete_old=False):
     
-    # if not path:
-    #     path=database_path
-    # ppath=Path(path).parents[0]
-    # #outpath=str(Path(ppath,Path(ppath.stem))) #remove path extension (needed for diamond command syntax)
+    if not output_path: output_path=database_path
+    output_path=str(Path(Path(output_path).parents[0],Path(output_path).stem)) #remove path extension (needed for diamond command syntax)
 
     command="cd "+'"'+str(Path(diamond_path).parents[0]) +'"'+ " && "
-    command+="diamond makedb --in "+'"'+database_path+'"' + " -d "+'"'+outpath+'"'
+    command+='"'+diamond_path+'"'+" makedb --in "+'"'+database_path+'"' + " -d "+'"'+output_path+'"'
     print(command)
     stdout, stderr =subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     if delete_old:
         os.remove(database_path)
 
-    return outpath+".dmnd"
+    return output_path+".dmnd"
 
 

@@ -16,35 +16,52 @@ from setup_NCBI_taxonomy import *
 from prep_Database import *
 from make_DIAMOND_database import *
 
+#%% Set execution
+
+
+download_DIAMOND=True
+download_ncbi_taxonomy=True
+download_database=True
+construct_DIAMOND_database=True
+
+#Database choices: "RefSeq", "NCBI_NR", "Swiss-Prot", "TrEMBL", "UniProt", "UniRef100", "UniRef90", "UniRef50"
+db="Swiss-Prot" 
+
+
+
 #%% Step 1: Download DIAMOND
 
-#diamond_path=download_diamond(path=False)
-diamond_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\diamond\diamond\\"
+if download_DIAMOND:
+    print("downloading DIAMOND")
+    diamond_path=download_diamond(path=False)
+
 
 #%% Step 2: Setup NCBI taxonomy
 
-# names,nodes=download_ncbi_taxdump(path=False)
-# ncbi_taxonomy_path=parse_NCBI_taxonomy(names,nodes)
-ncbi_taxonomy_path=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv"
+if download_ncbi_taxonomy:
+    print("Setting up NCBI taxonomy")
+    names,nodes=download_ncbi_taxdump(path=False)
+    ncbi_taxonomy_path=parse_NCBI_taxonomy(names,nodes)
+
     
 #%% Step 3: Setup Diamond database
 
-#Database choices: "RefSeq", "NCBI_NR", "Swiss-Prot", "TrEMBL", "UniProt", "UniRef100", "UniRef90", "UniRef50"
-#fasta_files=download_db("Swiss-Prot")
+if download_database:
+    print("Downloading database : "+db)
+    fasta_files=download_db(db)
 
-#merged_database=merge_files(fasta_files,delete_old=False)
-#merged_database=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\Swiss-Prot\uniprot_sprot.fasta"
-#prepped_database=prep_database(merged_database,delete_old=False)
-prepped_database=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\SwissProt\uniprot_sprot_NoAmb_IJeqL.fasta"
-outpath=r"C:\Users\LocalAdmin\Desktop\Spyder\NovoLign\prefinal_NovoLign_code_v19_HK02_MP\Setup\SwissProt\diamond_db"
-diamond_database_path=make_diamond_database(diamond_path,prepped_database,outpath,delete_old=False)
+if construct_DIAMOND_database:
+    print("constructing DIAMOND database : " +db)
+    merged_database=merge_files(fasta_files,delete_old=False)
+    prepped_database=prep_database(merged_database,delete_old=False)
+    diamond_database_path=make_diamond_database(diamond_path,database_path=prepped_database,output_path=False,delete_old=False)
 
 #%% Step 4: Write filepaths to file
 
-# path_df=pd.DataFrame([["diamond_path",                  diamond_path],
-#                       ["ncbi_taxonomy_path",      ncbi_taxonomy_path],
-#                       ["diamond_database_path",diamond_database_path]],columns=["name","path"]).set_index("name")
+path_df=pd.DataFrame([["diamond_path",                  diamond_path],
+                      ["ncbi_taxonomy_path",      ncbi_taxonomy_path],
+                      ["diamond_database_path",diamond_database_path]],columns=["name","path"]).set_index("name")
 
-# path_df.to_csv(Path(basedir,"setup_filepaths.tsv"),sep="\t")
+path_df.to_csv(Path(basedir,"setup_filepaths.tsv"),sep="\t")
 
 print("done")
