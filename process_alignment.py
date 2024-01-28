@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jan 28 15:17:18 2024
-
-@author: e_kle
-"""
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
