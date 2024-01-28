@@ -53,7 +53,6 @@ After determining the best-performing parameter combinations for the NovoLign pi
 #### What input files does it use? 
 NovoLign is tested to work with .psm output formats from PEAKS de novo sequencing and DeepNovo.
 Any tabular or .txt-like format can be supplied, provided it contains a column of peptide sequences with the header `Peptide`.
-In default operation NovoLign will look for any folder starting with `Input_` within the NovoLign directory (see: Path parameters). 
 For each folder, the required files are identified with the following syntax:
 - de_novo_file=..\\*de novo* *peptides.csv
 - database_searching_file=..\\*psm.csv
@@ -107,7 +106,6 @@ There are several parameters that can be changed to include more stringent filte
 Path parameters specify which databases should be used. 
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
-|Default| True|                 If True, will look for setup file and overwrite manual filepaths.|  
 |input_files| ..\NovoLign\Input_| Location of input folder
 |diamond_path| ..\NovoLign\Setup\diamond\diamond.exe |Location of DIAMOND executable|
 |diamond_folder| ..\NovoLign\Setup\diamond\ |Location of DIAMOND folder|
