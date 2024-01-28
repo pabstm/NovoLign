@@ -92,6 +92,10 @@ Example output vizualisation for database quality control, which compares the ta
 <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="400" height="300" align="right">
 <br clear="left"/>
 
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+![]("https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png")  |  ![]("https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png")
+
 ## Parameter options 
 Parameters can be freely changed within the main script.
 There are several parameters that can be changed to include more stringent filtering for de novo peptides.
