@@ -106,8 +106,6 @@ for infolder in input_files:
         denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore",filter_cutoff=freq_cut)
         # # 3. Weighted lca
         denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",filter_cutoff=freq_cut)
-        # # 4. Decoy corrected weighted lca
-        #denovo_peptides_cwlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="corrected_weights",filter_cutoff=freq_cut) 
 
     """
     3/5 Grouped taxonomy report
