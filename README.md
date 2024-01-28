@@ -88,13 +88,10 @@ Example output vizualisation for experiment quality control, which compares anno
 Example output vizualisation for database quality control, which compares the taxonomic composition of PSMs found exclusively in de novo sequencing (DN_only), all de novo PSMs (DN_all), all database searching PSMs (DB_all) and all PSMs unique to low scoring database searching hits (DBLQ_only).
 <br>
 <br>
-<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="400" height="300" align="left">
-<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="400" height="300" align="right">
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="45%" height="300" align="left">
+<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="45%" height="300" align="right">
 <br clear="left"/>
 
-Solarized dark             |  Solarized Ocean
-:-------------------------:|:-------------------------:
-![]("https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png")  |  ![]("https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png")
 
 ## Parameter options 
 Parameters can be freely changed within the main script.
