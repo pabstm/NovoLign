@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan 28 15:17:18 2024
+
+@author: e_kle
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -265,7 +272,7 @@ def lca(df,                                  # dataframe with columns named Pept
         denovo_peptides=None,                # crude PSM dataframe
 
         #Weighing parameters
-        method="weighted",                   # Options: False (conventional LCA), "weighted" (weighted lca), "focused" (focused lca)
+        method="weighted",                   # Options: False (conventional LCA), "weighted" (weighted lca), "bitscore" (bitscore lca)
         weight_rank="genus",                 # weighted weighs on a specific rank
         weight_column='corrected_weights',   # options: weights, corrected_weights, bitscore, score, weighted_score, corrected_weighted_score
         protein_column="sseqid",             # name of column containing protein accessions, will be retained according to lca 
@@ -299,7 +306,7 @@ def lca(df,                                  # dataframe with columns named Pept
             #df[taxid_column]=df[taxid_column].astype(str)
             df.loc[:,taxid_column] = df[taxid_column].astype(str)
         
-        if method=="focused":
+        if method=="bitscore":
             lin=[]
             for rank in ranks:
                 wc=df.groupby([group_on,rank]).agg({weight_column:['sum']})/df.groupby(group_on).agg({weight_column:['sum']})
@@ -319,7 +326,7 @@ def lca(df,                                  # dataframe with columns named Pept
                 cut_df=pd.concat([x.iloc[0:(x[weight_column].cumsum()<weight_cutoff).sum()+1] for n,x in group])
                 df=df[(df[group_on]+df[weight_rank]).isin(cut_df[group_on]+cut_df[weight_rank])]
             
-            lcas=df.groupby(group_on)[ranks].nth(0)[(df.groupby(group_on)[ranks].nunique()==1)] #vectorized standard lca
+            lcas=df.groupby(group_on)[ranks].nth(0)[(df.groupby(group_on)[ranks].nunique()==1)] #vectorized conventional lca
             
             if Output_directory == "simple_lca":
                 return lcas
@@ -347,7 +354,7 @@ def lca(df,                                  # dataframe with columns named Pept
     
         prefix=""
         if method=="weighted": prefix=name_dict.get(weight_column)+"_"+str(weight_cutoff).replace(".","")+"_" 
-        if method=="focused":  prefix=name_dict.get(weight_column)+"_"+str(weight_cutoff).replace(".","")+"_" 
+        if method=="bitscore":  prefix=name_dict.get(weight_column)+"_"+str(weight_cutoff).replace(".","")+"_" 
         if method=="standard": prefix="CON_0_"
 
         #filter proteins and taxids with postfilter 
@@ -380,8 +387,8 @@ def lca(df,                                  # dataframe with columns named Pept
             file=str(Path(Output_directory,"lca",prefix+str(filter_cutoff)+"_TARGET_lca.tsv")) 
             lcas.to_csv(file,sep="\t")            
           
-            #write DN focused database
-            db_out=str(Path(Output_directory,"database",prefix+write_database+"_"+minimum_rank+"_DN_focused_referenc_database.fasta"))
+            #write DN bitscore database
+            db_out=str(Path(Output_directory,"database",prefix+write_database+"_"+minimum_rank+"_DN_bitscore_referenc_database.fasta"))
             if write_database=="Proteins":
                 fasta_str=Proteins_to_fasta(df,lcas,removed_proteins=removed_proteins,add_denovo=add_denovo)
                 if fasta_str:
