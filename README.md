@@ -80,8 +80,11 @@ NovoLign generates several output files divided over different folders.
 Example output vizualisation for experiment quality control, which compares annotation rates for de novo sequenced PSMs at different de novo scores (ALC%) compared to database searching, and checks if the aligned peptide sequences are the same as the peptide sequences found in database searching.
 <br>
 <br>
-<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB search psm_bins.png" width="45%" height="300" align="left">
-<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/de novo peptides_bins.png" width="45%" height="300" align="right">
+<p align="center">
+      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB search psm_bins.png" width="45%" height="300" align="left">
+&nbsp; &nbsp; &nbsp; &nbsp;
+      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/de novo peptides_bins.png" width="45%" height="300" align="right">
+</p>
 <br clear="left"/>
 
 <br>
