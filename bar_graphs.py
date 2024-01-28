@@ -91,11 +91,10 @@ def graphs(file,Output_directory,ranks,cutbranch):
     quantdf[countcols].to_excel(writer, sheet_name='TAX_COUNTS')
     quantdf.to_excel(writer, sheet_name='COMBINED')  
     
-
+    #depends on pandas version
     try:
-        writer.close()
+        writer.save() 
     except Exception as error:
-        print("An error occurred:", type(error).__name__, "–", error)
-        print(" no table for "+str(file))
+        writer.close()
 
     return quantdfs
