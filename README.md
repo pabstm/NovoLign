@@ -101,11 +101,11 @@ Path parameters specify which databases should be used.
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
 |Default| True|                 If True, will look for setup file and overwrite manual filepaths.|  
-|input_files| ..\CHEW\*Input_*| Location of input folder
-|diamond_path| ..\CHEW\Setup\diamond\diamond.exe |Location of DIAMOND executable|
-|diamond_folder| ..\CHEW\Setup\diamond\ |Location of DIAMOND folder|
-|Temporary_directory| ..\CHEW\ |    Folder for writing temporary DIAMOND indices |
-|ncbi_taxonomy_path|  ..\CHEW\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv|Location of linear NCBI taxonomy|        
+|input_files| ..\NovoLign\*Input_*| Location of input folder
+|diamond_path| ..\NovoLign\Setup\diamond\diamond.exe |Location of DIAMOND executable|
+|diamond_folder| ..\NovoLign\Setup\diamond\ |Location of DIAMOND folder|
+|Temporary_directory| ..\NovoLign\ |    Folder for writing temporary DIAMOND indices |
+|ncbi_taxonomy_path|  ..\NovoLign\Setup\ncbi_taxonomy\parsed_ncbi_taxonomy.tsv|Location of linear NCBI taxonomy|        
 |fasta_database_path  ||Location of database fasta file|
 |diamond_database_path||Location of database dmnd file|
 
