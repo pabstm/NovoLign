@@ -101,9 +101,9 @@ for infolder in input_files:
     print("Step 2 of 5: Construct LCAs")
     for target_decoy in target_decoys: 
         # 1. Conventional lca
-        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="standard",filter_cutoff=freq_cut,minimum_rank=DB_rank,write_database=DB)
+        denovo_peptides_lca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="conventional",filter_cutoff=freq_cut,minimum_rank=DB_rank,write_database=DB)
         # 2. Bitsore lca 
-        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="focused",weight_column="bitscore",filter_cutoff=freq_cut)
+        denovo_peptides_blca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="bitscore",weight_column="bitscore",filter_cutoff=freq_cut)
         # # 3. Weighted lca
         denovo_peptides_wlca=lca(target_decoy,Output_directory,denovo_peptides=denovo_peptides,method="weighted",weight_column="weights",filter_cutoff=freq_cut)
 
