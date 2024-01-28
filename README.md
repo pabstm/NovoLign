@@ -101,7 +101,7 @@ Path parameters specify which databases should be used.
 |Parameter        |Default value| Description|
 |-----------------|:-----------:|---------------|
 |Default| True|                 If True, will look for setup file and overwrite manual filepaths.|  
-|input_files| ..\NovoLign\*Input_*| Location of input folder
+|input_files| ..\NovoLign\Input_| Location of input folder
 |diamond_path| ..\NovoLign\Setup\diamond\diamond.exe |Location of DIAMOND executable|
 |diamond_folder| ..\NovoLign\Setup\diamond\ |Location of DIAMOND folder|
 |Temporary_directory| ..\NovoLign\ |    Folder for writing temporary DIAMOND indices |
