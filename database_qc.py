@@ -62,17 +62,22 @@ class rectangle:
         self.color=color # good/dump/gap/missing
 
 
-def merge_taxonomy(dn_df,
-                   db_df):
-    dn=dn_df[["Scan"]+ranks].astype(str)
-    dn.columns=["Scan"]+["dn_"+rank for rank in ranks]
-    db_df['psm']='Y' #add db search identifier
-    db=db_df[["psm"]+["Scan"]+ranks].astype(str)
-    db.columns=["psm"]+["Scan"]+["db_"+rank for rank in ranks]
-    merged_taxonomy=db.merge(dn,on="Scan",how="outer").fillna("nan")
-    return merged_taxonomy
-
-
+  def merge_taxonomy(dn_df,db_df):
+      # modify headers
+      dn=dn_df[["Scan"]+ranks].astype(str)
+      dn.columns=["Scan"]+["dn_"+rank for rank in ranks]
+      # remove duplicates for chimera in db psm file
+      db_df.set_index('Scan', inplace=True)
+      db_df = db_df[~db_df.index.duplicated()]
+      db_df.reset_index(inplace=True)
+      # modify headers
+      db_df['psm']='Y'
+      db=db_df[["psm"]+["Scan"]+ranks].astype(str)
+      db.columns=["psm"]+["Scan"]+["db_"+rank for rank in ranks]
+      # merge dn and db
+      merged_taxonomy = pd.merge(db, dn, on='Scan', how='outer').fillna("nan")
+    
+        return merged_taxonomy
 def Topx_taxa(merged_taxonomy,rank,topx=15):
         xdf=pd.concat([
         pd.DataFrame(Counter(merged_taxonomy["db_"+rank]).most_common(),columns=[rank,"db"]).set_index(rank),
@@ -117,15 +122,14 @@ def Compare_Bar(denovo_peptides_lca,database_searching_file,fasta_database,taxa,
         taxids['OX'] = taxids['OX'].apply(str)
         database_peptides=assign_ncbi_taxonomy(database_searching_file,fasta_database,ncbi_taxdf,taxids=taxids)
         database_peptides=database_peptides.fillna("")
-    
-    if fillgaps==True:
-        gaps=database_peptides[(database_peptides[ranks]=="").any(axis=1)]
-        u,ix,inv=np.unique(gaps[ranks].apply(";".join,axis=1),return_inverse=True,return_index=True)
-        u=gaps.iloc[ix][ranks].values
-        gap_1=pd.DataFrame(np.array(list((map(fill_g,u))))[inv]).set_index(gaps.index)
-        if gaps.empty == False:
-            database_peptides.loc[gap_1.index,ranks]=gap_1.values      
-            
+        
+    gaps=database_peptides[(database_peptides[ranks]=="").any(axis=1)]
+    u,ix,inv=np.unique(gaps[ranks].apply(";".join,axis=1),return_inverse=True,return_index=True)
+    u=gaps.iloc[ix][ranks].values
+    gap_1=pd.DataFrame(np.array(list((map(fill_g,u))))[inv]).set_index(gaps.index)
+    if gaps.empty == False:
+        database_peptides.loc[gap_1.index,ranks]=gap_1.values  
+                  
     merged_taxonomy=merge_taxonomy(dn_lca,database_peptides)
 
 
