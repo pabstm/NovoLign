@@ -1,0 +1,9 @@
+Bio==1.6.2
+biopython==1.81
+ftputil==5.1.0
+matplotlib==3.7.1
+more_itertools==8.12.0
+numpy==1.24.3
+pandas==1.5.3
+Requests==2.31.0
+seaborn==0.13.2
