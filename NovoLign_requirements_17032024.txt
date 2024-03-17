@@ -7,3 +7,4 @@ numpy==1.24.3
 pandas==1.5.3
 Requests==2.31.0
 seaborn==0.13.2
+created with pipreqs / 17032024
