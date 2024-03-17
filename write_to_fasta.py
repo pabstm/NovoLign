@@ -152,7 +152,7 @@ def format_DeepNovo(df):
     # calculate ppm shift from m/z
     mass=np.zeros((1,len(df)))
     # currently only carbamidomethylation and oxidation are implemented
-    mass+=df["Peptide"].str.count("(Carbamidomethylation)").fillna(0)*57.021463 #I could implement here unimod to use all possible modifications
+    mass+=df["Peptide"].str.count("(Carbamidomethylation)").fillna(0)*57.021463 #add possible modifications
     mass+=df["Peptide"].str.count("(Oxidation)").fillna(0)*15.994915
 
     df['Peptide']=df['Peptide'].apply(lambda x: re.sub("[\(\[].*?[\)\]]", "", x).replace(",","")) #remove ptms in peptides
