@@ -3,17 +3,14 @@
 
 
 This is the repository for the NovoLign pipeline, as described in:<br>
-"NovoLign: metaproteomic profiling by de novo sequence alignment" 
+"NovoLign: metaproteomics by sequence alignment" 
 
 
-The pipeline was established and tested with shotgun (meta)proteomics data obtained from Q Exactive Orbitrap Mass Spectrometers, using PEAKS generated de novo sequence lists. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra. NovoLign has been tested and developed in an Anaconda Spyder environment.
-
-<img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/workflow.svg" width="300" height="400" align="right">
-<br>
+The pipeline was established and tested with shotgun proteomics and metaproteomics data obtained from different projectss. The measurments were performed using Orbitrap mass spectrometers, de novo sequence lists were generated using PEAKS Studio. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra. NovoLign has been tested and developed using the Anaconda Spyder environment.
+It is highly recommended to use Python package versions as specified in the "NovoLign_requirements_17032024" text file to ensure smooth operation of the pipeline. Newer versions may lead to inconsistent outcomes and unexpected errors.
 
 #### What is NovoLign? 
-NovoLign is a tool for rapid annotation of de novo sequenced peptides with homology alignment.
-It uses DIAMOND for high-througput, error-tolerant annotation of de novo sequenced peptides.
+NovoLign is a tool for rapid annotation of de novo sequenced peptides from complete metaproteomics experiments uisng homology alignment. It uses DIAMOND for high-througput, error-tolerant annotation of de novo sequenced peptides.
 As de novo sequencing is independent of database composition, it provides an unbiased alternative to conventional database searching methods. By aligning de novo peptides to general databases such as UniRef100, NovoLign can find related peptide sequences, which can aid in construction of sample specific databases, database and experiment quality control, and asses the completeness of references databases.
 
 
