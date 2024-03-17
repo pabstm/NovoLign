@@ -1,6 +1,0 @@
-
-P:\raws\Metaproteomics_DeNovo_Study\NOVOLIGN_26062022\pure_strains\Yeast
-
-Y2
-DN pks 339
-DB pks 340
