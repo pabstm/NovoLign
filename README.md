@@ -64,12 +64,12 @@ Examples of input files are supplied in the folder `Input_p_yeast`
 NovoLign generates several output files divided over different folders.
 |Folder           | Section     |       Contents|
 |-----------------|:-----------:|---------------|
-|diamond_fasta| 1 | generated fasta file for DIAMOND alignment|
+|diamond_fasta| 1 | generated fasta file from input peptide sequences file for DIAMOND alignment|
 |diamond_alignments| 1 | DIAMOND alignment|
 |lca| 2 | different LCA outputs: conventional (CON) weighted (W), bitscore weighted (BIT) |
-|composition| 3 | composition for different LCA outputs |
-|experiment_qc| 4 | comparison of spectral annotation rates by NovoLign and database searching, for spectra at different quality levels|
-|database_qc| 5 | comparison of taxonomic composition obtained by NovoLign to taxonomic composition obtained by database searching |
+|composition| 3 | taxonomic composition of input sample (for different LCAs) including level of decoy matches|
+|experiment_qc| 4 | comparison of spectral annotation rates of input sample by NovoLign and database searching, for spectra at different quality levels|
+|database_qc| 5 | comparison of taxonomic composition of input sample obtained by NovoLign to taxonomic composition obtained by database searching |
 |psms| 5 | Final PSMs format output with NovoLign annotation |
 
 <br>
