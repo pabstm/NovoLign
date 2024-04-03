@@ -68,8 +68,8 @@ NovoLign generates several output files divided over different folders.
 |diamond_alignments| 1 | DIAMOND alignment|
 |lca| 2 | different LCA outputs: conventional (CON) weighted (W), bitscore weighted (BIT) |
 |composition| 3 | composition for different LCA outputs |
-|experiment_qc| 4 | comparison of de novo annotation rate per de novo score to database searching|
-|database_qc| 5 | comparison of taxonomic composition for de novo annotation to database searching |
+|experiment_qc| 4 | comparison of spectral annotation rates by NovoLign and database searching, for spectra at different quality levels|
+|database_qc| 5 | comparison of taxonomic composition obtained by NovoLign to taxonomic composition obtained by database searching |
 |psms| 5 | Final PSMs format output with NovoLign annotation |
 
 <br>
