@@ -141,7 +141,7 @@ If you would like to use this pipeline in your research, please cite the followi
 
 #### Contact:
 -Hugo Kleimamp (Developer): hugo.kleikamp@uantwerpen.be<br> 
--Martin Pabst (Co-Developer): M.Pabst@tudelft.nl<br>
+-Martin Pabst (Co-Developer): m.pabst@tudelft.nl<br>
 
 
 #### Related repositories:
