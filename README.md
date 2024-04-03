@@ -118,7 +118,7 @@ Other parameters specify cutoffs for de novo score, alignment score and taxon fr
 |-----------------|:-----------:|---------------|
 |min_ALC_score| 70 |               numeric, minimum required ALC score (Peaks score)|
 |bit | 25 |                   numeric, minimum required bitscore for alignment|
-|freq_cut|5 |                     numeric, minimum lineage frequency filter for composition and DB creation|
+|freq_cut|5 or 15 |                     numeric, minimum taxon (or lineage) reporting frequency threshold for reporting microbial composition and DB creation. The higher value 15 will remove very low abundant taxonomies from the composition report|
 |Write_to_database| "Proteins"| do not make a database(False), use aligned proteins ("Proteins") use aligned taxids("Taxids").|
 |DB_rank|"genus"|                 rank specificity  ("OX" "species" "genus" or "family") if "Taxids" is used for Write_to_database |
 
