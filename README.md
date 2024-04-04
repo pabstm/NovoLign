@@ -88,9 +88,9 @@ Example output vizualisation for database quality control, which compares the ta
 <br>
 <br>
 <p align="center">
-      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="45%" height="350" align="left">
+      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusabsolute_topX.png" width="45%" height="300" align="left">
 &nbsp; &nbsp; &nbsp; &nbsp;
-      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="45%" height="350" align="right">
+      <img src="https://github.com/hbckleikamp/NovoLign/blob/main/images/DB_vs_DN_genusnormalized_topX.png" width="45%" height="300" align="right">
 </p>
 <br clear="left"/>
 
