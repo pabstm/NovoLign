@@ -148,7 +148,7 @@ If you would like to use this pipeline in your research, please cite the followi
 https://github.com/bbuchfink/diamond<br>
 https://github.com/hbckleikamp/proteomic-database-prepper<br>
 https://github.com/hbckleikamp/NCBI2Lineage<br>
-https://github.com/hbckleikamp/GTDB2DIAMOND
+https://github.com/hbckleikamp/GTDB2DIAMOND<br>
 https://github.com/hbckleikamp/De-Novo-ErrorSIM
 
 
