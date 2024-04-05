@@ -149,5 +149,6 @@ https://github.com/bbuchfink/diamond<br>
 https://github.com/hbckleikamp/proteomic-database-prepper<br>
 https://github.com/hbckleikamp/NCBI2Lineage<br>
 https://github.com/hbckleikamp/GTDB2DIAMOND
+https://github.com/hbckleikamp/De-Novo-ErrorSIM
 
 
