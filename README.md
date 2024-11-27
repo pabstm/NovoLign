@@ -7,7 +7,7 @@ This is the repository for the NovoLign pipeline, as described in:<br>
 
 This github page will be continuously updated. To use the original NovoLign version as was published, 
 please refer to the archived github page:
-https://github.com/hbckleikamp/NovoLign-Publication-
+https://github.com/hbckleikamp/NovoLign/
 
 
 The pipeline was established and tested with shotgun proteomics and metaproteomics data obtained from different projectss. The measurments were performed using Orbitrap mass spectrometers, de novo sequence lists were generated using PEAKS Studio. The generation of accurate de novo peptide sequence lists depends on high quality peptide sequencing spectra. NovoLign has been tested and developed using the Anaconda Spyder environment.
