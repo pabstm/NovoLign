@@ -108,7 +108,7 @@ python "NovoLign_CLI.py" -i "Input_p_Yeast/de novo peptides.csv" -di "Input_p_Ye
 |-----------------|:-----------:|---------------|
 |-di| n.a. | Optional, --database_searching_file: database searching file, for comparison with de novo sequenced peptides, should be tabular and contain the column 'Peptide' |
 |-taxa| n.a. | Optional, Specified taxa for the visual comparison of database searching and de novo sequencing outputs |
-|-o| n.a. | Optional, --Output_directory: Path to output folder|
+
 
 <br>**Default filepaths**
 |Argument      |Default value| Description|
