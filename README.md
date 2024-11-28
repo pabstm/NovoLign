@@ -94,7 +94,7 @@ python "NovoLign_CLI.py" -i "Input_p_Yeast/de novo peptides.csv" -di "Input_p_Ye
 |-ALC| 70 | Optional, --min_ALC_score: Minimum ALC score (PEAKS specific score)|
 |-bit| 25 | Optional, -min_bit_score: Minimum bitscore (DIAMOND alignment score)|
 |-freq| 5 | Optional, --freq_cut: Minium taxa frequency for denoising|
-|-lcas| ['lca','bitlca','wcla'] | Optional, which lca algorithms to use: lca (conventional lca), bitlca (bistcore weighted lca), wlca (weighted lca)|
+|-lcas| ['lca','bitlca','wlca'] | Optional, which lca algorithms to use: lca (conventional lca), bitlca (bistcore weighted lca), wlca (weighted lca)|
 
 <br>**Database construction**
 |Argument      |Default value| Description|
