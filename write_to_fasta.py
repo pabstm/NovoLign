@@ -56,6 +56,7 @@ def read_table(tabfile, *,
             if Keyword not in tab.columns:
                 delims = [i[0] for i in Counter(
                     [i for i in str(tab.iloc[0]) if not i.isalnum()]).most_common()]
+                delims=[i for i in delims if i!='"']
                 for delim in delims:
                     if delim == " ":
                         delim = "\s"
