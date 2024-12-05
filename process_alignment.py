@@ -116,7 +116,7 @@ def Process_diamond_alignment(alignments,
         #add NCBI taxonomy for UniRef or UniprotKB headers
         
         if al.head(10)["stitle"].str.contains("TaxID=").any(): tax_dlim,gene_dlim="TaxID=","RepID="
-        al["OX"]  =al["stitle"].apply(lambda x: ((x+tax_dlim+"1 ").split(tax_dlim)[1].split()+[" "])[0].astype(int)
+        al["OX"]  =al["stitle"].apply(lambda x: ((x+tax_dlim+"1 ").split(tax_dlim)[1].split()+[" "])[0]).astype(int)
         al["gene"]=al["stitle"].apply(lambda x: ((x+gene_dlim+" ").split(gene_dlim)[1].split()+[" "])[0])
         al=al.merge(ncbi_taxdf,how="left",on="OX").fillna("")
    
