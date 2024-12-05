@@ -131,7 +131,7 @@ from process_alignment import *
 from experiment_qc import Plot_high_scoring
 from database_qc import *
 
-toggle_usefileame=False
+toggle_usefilename=False
 for ix,de_novo_file in enumerate(de_novo_files):
     print("")
     print("analysing: "+de_novo_file)
