@@ -101,6 +101,8 @@ def Process_diamond_alignment(alignments,
                               minimum_bitscore=0,
                               min_ALC_score=40,
                               weight_rank="genus",
+                              tax_dlim="OX=",
+                              gene_dlim="GN=",
                               output_columns=["qseqid","sseqid","stitle","pident","bitscore","qseq","sseq"]
                               ):
    
@@ -112,13 +114,10 @@ def Process_diamond_alignment(alignments,
         al=pd.concat([i for i in iterable])
        
         #add NCBI taxonomy for UniRef or UniprotKB headers
-        if al.head(10)["stitle"].str.contains("TaxID=").any(): 
-            al["OX"] = al["stitle"].apply(lambda x: ((x+"TaxID="+" ").split("TaxID=")[1].split()+[" "])[0].replace("N/A","131567")).astype(int)
-            al["gene"]=al["stitle"].apply(lambda x: ((x+"RepID="+" ").split("RepID=")[1].split()+[" "])[0])
-        else:
-            al["OX"]  =al["stitle"].apply(lambda x: ((x+"OX="+" ").split("OX=")[1].split()+[" "])[0].replace("N/A","131567")).astype(int)
-            al["gene"]=al["stitle"].apply(lambda x: ((x+"GN="+" ").split("GN=")[1].split()+[" "])[0])
-
+        
+        if al.head(10)["stitle"].str.contains("TaxID=").any(): tax_dlim,gene_dlim="TaxID=","RepID="
+        al["OX"]  =al["stitle"].apply(lambda x: ((x+tax_dlim+"1 ").split(tax_dlim)[1].split()+[" "])[0].astype(int)
+        al["gene"]=al["stitle"].apply(lambda x: ((x+gene_dlim+" ").split(gene_dlim)[1].split()+[" "])[0])
         al=al.merge(ncbi_taxdf,how="left",on="OX").fillna("")
    
 
