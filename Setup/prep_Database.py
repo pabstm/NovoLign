@@ -71,6 +71,7 @@ def prep_database(
                   Add_taxid=False,                                # add taxonomy id to accession, useful since database searching tools often only annotate accession
                   Taxid_delimiter_left="OX=",                     # left delimiter of taxid in header (right delimiter =space), used to (Uniref would have Taxid=)  
                   Taxid_delimiter_right=" ",
+                  rename=False,                                   #rename organism names to taxonomy IDs
                   db=False,                                       #predefined delimiters
                   #Database choices: "RefSeq", "NCBI_NR", "Swiss-Prot", "TrEMBL", "UniProt", "UniRef100", "UniRef90", "UniRef50"
                   
@@ -79,7 +80,7 @@ def prep_database(
                   
                   Output_path=False,                              # full path to database output
                   delete_old=False,
-                  ranks=["superkingdom","phylum","class","order","family","genus","species"]
+                  
    
                   ):
 
@@ -117,18 +118,17 @@ def prep_database(
     
     #write 
     once=True
-    rename=True
     print("writing "+Path(Output_path).stem)
     with open(Output_path,"w") as f: #clears file if exists
         pass
     with open(Output_path,"a") as f:
-       
+    
         for ic,c in enumerate(chunks):
             print("chunk "+ str(ic))
-       
+    
             chunk_df=pd.DataFrame([[str(r.seq),r.description] for r in c],columns=["seq","description"])
-            chunk_df.description=chunk_df.description.str.replace("\x01"," ")
-            
+    
+    
             ### dynamic taxid delmiter detection
             if once:
                 test=chunk_df.head(10)["description"]
@@ -138,82 +138,44 @@ def prep_database(
                     else:                                   Taxid_delimiter_left,Taxid_delimiter_right =" [","] "
                 once=False 
        
-                #test if taxonomies are OS or OX? 
+                #test if taxonomies are OS or OX?
                 taxids=test.str.split(Taxid_delimiter_left,regex=False).apply(lambda x: x[-1]).str.split(Taxid_delimiter_right,regex=False).apply(lambda x: x[0])
-                if not taxids.str.isnumeric().all():
-                    taxdf=pd.read_csv(Path_to_taxonomy,sep="\t",index_col=[0])
-                    
+                if (not taxids.str.isnumeric().all()) & (rename):
                     with open(Path_to_synonyms,"r") as syns: lines=pd.DataFrame([l.split("\t")[0:7] for l in syns.readlines()])
                     namesdf=lines.iloc[:,[0,2,4,6]]
                     namesdf.columns=["taxid","name","x","type"]
-                    names2tax=namesdf[["name","taxid"]].drop_duplicates().set_index("name").astype(np.int64)
-                    rename=True #set rename flag
-       
+                    names2tax=namesdf[["name","taxid"]].set_index("name").astype(np.int64).drop_duplicates()
+                    u,ui,uc=np.unique(names2tax.index,return_inverse=True,return_counts=True) #unique names only
+                    names2tax=names2tax[uc[ui]==1]
+
             #sequence related database editing
             if Equate_IL:        chunk_df["seq"]=chunk_df["seq"].str.replace("I","L").str.replace("J","L")
-            if Remove_ambiguous: chunk_df=chunk_df[~pd.concat([chunk_df["seq"].str.contains(aa,regex=False) for aa in Remove_ambiguous],axis=1).any(axis=1)].reset_index(drop=True)
-            if No_Fragments:     chunk_df=chunk_df[~chunk_df["description"].str.contains("(Fragment",regex=False)].reset_index(drop=True)
-       
+            if Remove_ambiguous: chunk_df=chunk_df[~pd.concat([chunk_df["seq"].str.contains(aa,regex=False) for aa in Remove_ambiguous],axis=1).any(axis=1)]
+            if No_Fragments:     chunk_df=chunk_df[~chunk_df["description"].str.contains("(Fragment",regex=False)]
+    
             #taxonomy related database editing
-            
             if Prokaryote_only or No_Dump or rename:
-                taxids=(chunk_df.description+" ").str.split(Taxid_delimiter_left,regex=False)
-                taxids=taxids.apply(lambda x: x[1::2]).explode().dropna().str.split(Taxid_delimiter_right,regex=False).apply(lambda x: x[0])
-                
+                taxids=(chunk_df.description+" ").str.split(Taxid_delimiter_left,regex=False).apply(lambda x: x[-1]).str.split(Taxid_delimiter_right,regex=False).apply(lambda x: x[0])
                 
                 if rename: #turn OS into OX
                     q=taxids.isin(names2tax.index)
-                    taxids[~q]="root" #placeholder (or taxids=taxids[q])
-                    
-                    t=taxids.reset_index().merge(names2tax,left_on="description",right_on="name",how="left").drop_duplicates()
-                    lins=taxdf.set_index("OX").loc[t.taxid].reset_index()
-                    lins.index=t["index"]
-                    lins["OX"]=lins["OX"].astype(str)
-                    lca=lins.groupby(lins.index)[ranks+["OX"]].nth(0)[(lins.groupby(lins.index)[ranks+["OX"]].nunique()==1)]
-            
-                    taxa=[]
-                    counter=0
-                    while lca.OX.isnull().sum():
-                        taxa.append(lca.OX.dropna())
-                        
-                        t=lca.loc[lca["OX"].isnull(),ranks].ffill(axis=1).species.fillna("root")
-                        t.name="OS"
-                        lins=taxdf.merge(t.reset_index(),how="right").set_index("index")
-                        lins["OX"]=lins["OX"].astype(str)
-                        lca=lins.groupby(lins.index)[ranks+["OX"]].nth(0)[(lins.groupby(lins.index)[ranks+["OX"]].nunique()==1)]
-                        
-                        counter+=1
-                        if counter>5:
-                            break
-                
-                
-                    taxa=pd.concat(taxa).reset_index().astype(int)
-                    taxids=np.ones(len(chunk_df),dtype=int)
-                    taxids[taxa["index"]]=taxa["OX"]
-                    
-                    schunk=chunk_df.description.str.split(" ",n=1) 
-                    chunk_df["description"]=schunk.apply(lambda x: x[0])+" OX="+taxids.astype(str)+" "+schunk.apply(lambda x: x[1]) #add to description
-                    
-                 
-       
-                if Prokaryote_only or No_Dump: chunk_df=chunk_df[taxids.isin(taxdf["OX"])].reset_index(drop=True)
-       
-       
-       
+                    chunk_df=chunk_df[q]
+                    taxids=names2tax.loc[taxids[q],"taxid"].values
+                    chunk_df["description"]=chunk_df.description+" OX="+taxids.astype(str)+" " #add to description
+    
+                if Prokaryote_only or No_Dump: chunk_df=chunk_df[taxids.isin(taxdf["OX"])]
+    
             if Add_decoy:
                 decoy=chunk_df.copy()
                 if Add_decoy=="scramble": decoy["seq"]=decoy.seq.apply(lambda x: ''.join(random.sample(x,len(x))))
                 if Add_decoy=="reverse":  decoy["seq"]=decoy.seq.apply(lambda x: x[::-1])
                 decoy["description"]=decoy_delimiter+decoy["description"]
                 chunk_df=pd.concat([chunk_df,decoy])
-            
-      
-            
-            f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"]+"\n"))
-       
-
+                
+            f.write("\n".join(">"+chunk_df["description"]+"\n"+chunk_df["seq"]))
 
 
     if delete_old:
         os.remove(Path_to_db)
     return Output_path
+
