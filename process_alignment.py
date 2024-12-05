@@ -31,17 +31,7 @@ def filter_chunk(s,top_score_fraction,minimum_bitscore,min_ALC_score):
     
     #filter based on bitscore
     if minimum_bitscore:      s=s[s.bitscore>=minimum_bitscore]
-    
-    if s.empty == False:
-        #extract and filter based on ALC
-        split_list=[]
-        for index, row in s.iterrows():
-            split_list.append(row["qseqid"].split("'ALC(%)':")[1])
-        split_list=[float(item.replace("'","").replace("}","")) 
-                      for item in split_list]
-        alc=pd.DataFrame(split_list).set_index(s.index)
-        alc.rename(columns={0:"ALC"}, inplace=True)
-        if min_ALC_score:         s=s[alc.ALC>=min_ALC_score]
+    if min_ALC_score:         s=s[s.ALC>=min_ALC_score]
     
     return s
 
@@ -61,6 +51,9 @@ def Diamond_alignment_Reader(input_file,
     for ix,c in enumerate(cdf):
         print(ix)
         c["bitscore"]=c["bitscore"].astype(float)
+        c["ALC"]=100
+        c.loc[c.qseqid.str.contains("'ALC(%)':",regex=False),"ALC"]=c.loc[c.qseqid.str.contains("'ALC(%)':",regex=False),"qseqid"].str.split("'ALC(%)':",regex=False).apply(lambda x: x[-1]).str.strip("'}").astype(float)
+            
         _,index=np.unique(c.qseqid,return_index=True)
         index.sort()
         index_m=index.tolist()+[max(index)+1]
