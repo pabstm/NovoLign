@@ -76,15 +76,11 @@ def graphs(file,Output_directory,ranks,cutbranch):
         
         quantdf=pd.concat([quantdf, values], axis=1)
         
-    # get name extension
-    ext=Output_directory.split("Output_")[1]
-    
     # write composition
     quantdfs=quantdf.fillna(0)
     namecols=[i for i in quantdf.columns  if "count" not in i] 
     countcols=[i for i in quantdf.columns  if "count" in i] 
-    name_1=file.split('tab\\')
-    basename="comp_Cts_"+Path(name_1[0]).stem+'_'+ext+'.xlsx'
+    basename="comp_Cts_"+Path(file).stem+'_'+ext+'.xlsx'
     xlsfilename=str(Path(pathout,basename))
     writer=pd.ExcelWriter(xlsfilename, engine='xlsxwriter')
     quantdf[namecols].to_excel(writer, sheet_name='TAX_LINEAGES')
